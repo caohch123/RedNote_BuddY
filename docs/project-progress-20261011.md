@@ -359,15 +359,15 @@ xhs-workbench/
 | 接手内容 | 推荐入口 |
 | --- | --- |
 | 整体启动与使用 | [README](../README.md)、[scripts/start.ps1](../scripts/start.ps1) |
-| 页面结构与工作区切换 | [App.tsx](../web/src/App.tsx)、[workspace.tsx](../web/src/workspace.tsx) |
-| 仿写及素材交互 | [Rewrites.tsx](../web/src/pages/Rewrites.tsx)、[ProjectMediaLibrary.tsx](../web/src/components/ProjectMediaLibrary.tsx)、[SortableMediaGrid.tsx](../web/src/components/SortableMediaGrid.tsx) |
-| 图像与视频界面 | [ImageRewriteWorkspace.tsx](../web/src/components/ImageRewriteWorkspace.tsx)、[VideoWorkspace.tsx](../web/src/components/VideoWorkspace.tsx) |
-| 列表与横向滚动 | [WorkspaceTableScrollbar.tsx](../web/src/components/WorkspaceTableScrollbar.tsx)、[style.css](../web/src/style.css) |
-| 队列、视频与视觉业务 | [workers.go](../internal/app/workers.go)、[image_voice.go](../internal/app/image_voice.go)、[visual_rewrites.go](../internal/app/visual_rewrites.go) |
-| 素材归属与图库 | [media_library.go](../internal/app/media_library.go)、[style_library.go](../internal/app/style_library.go) |
-| 存储结构 | [初始迁移](../internal/store/migrations/001_initial.sql) |
-| 采集离线恢复 | [collector.go](../internal/providers/collector.go)、[回归用例](../internal/providers/collector_recovery_test.go) |
-| 外部服务协议 | [providers 说明](../internal/providers/README.md)、[API 文档](api.md) |
+| 页面结构与工作区切换 | [App.tsx](../frontend/src/App.tsx)、[workspace.tsx](../frontend/src/workspace.tsx) |
+| 仿写及素材交互 | [Rewrites.tsx](../frontend/src/pages/Rewrites.tsx)、[ProjectMediaLibrary.tsx](../frontend/src/components/ProjectMediaLibrary.tsx)、[SortableMediaGrid.tsx](../frontend/src/components/SortableMediaGrid.tsx) |
+| 图像与视频界面 | [ImageRewriteWorkspace.tsx](../frontend/src/components/ImageRewriteWorkspace.tsx)、[VideoWorkspace.tsx](../frontend/src/components/VideoWorkspace.tsx) |
+| 列表与横向滚动 | [WorkspaceTableScrollbar.tsx](../frontend/src/components/WorkspaceTableScrollbar.tsx)、[style.css](../frontend/src/style.css) |
+| 队列、视频与视觉业务 | [workers.go](../backend/internal/app/workers.go)、[image_voice.go](../backend/internal/app/image_voice.go)、[visual_rewrites.go](../backend/internal/app/visual_rewrites.go) |
+| 素材归属与图库 | [media_library.go](../backend/internal/app/media_library.go)、[style_library.go](../backend/internal/app/style_library.go) |
+| 存储结构 | [初始迁移](../backend/internal/store/migrations/001_initial.sql) |
+| 采集离线恢复 | [collector.go](../backend/internal/providers/collector.go)、[回归用例](../backend/internal/providers/collector_recovery_test.go) |
+| 外部服务协议 | [providers 说明](../backend/internal/providers/README.md)、[API 文档](api.md) |
 
 ## 8. 新成员运行与协作建议
 
@@ -383,7 +383,7 @@ xhs-workbench/
 
 访问 `http://127.0.0.1:8080`。停止使用 `scripts/stop.ps1`，只处理本项目登记且归属匹配的进程。默认启动会同时准备采集服务；`-SkipEngine` 仅用于复用已有引擎，当前实现会在引擎离线时回退启动。
 
-生产运行使用 `web/dist`，修改前端源码后必须构建才能在 8080 页面看到更新；只运行前端开发服务器不等于生产静态页已更新。更新前检查执行中任务，避免中断付费操作或发布。
+生产运行使用 `frontend/dist`，修改前端源码后必须构建才能在 8080 页面看到更新；只运行前端开发服务器不等于生产静态页已更新。更新前检查执行中任务，避免中断付费操作或发布。
 
 ### 8.2 开发检查
 
@@ -445,7 +445,7 @@ npm.cmd test
 - [工作区测试记录](workspace-test-record.md)
 - [接口与任务说明](api.md)
 - [风格参考库维护](../style-library/README.md)
-- [外部服务适配与地址配置](../internal/providers/README.md)
+- [外部服务适配与地址配置](../backend/internal/providers/README.md)
 
 第三方来源采用固定版本并保留说明：小红书采集基于 XHS-Downloader 2.8（GPL-3.0），发布参考 Spider_XHS 5.0.0；抖音参考 douyin-downloader 的固定提交并保留 MIT 来源记录，登录与发布由本项目适配；HyperFrames、字体与 FFmpeg 保留各自许可证说明。重新分发前应按实际打包内容核对相关许可证与固定源码记录，不能把全部第三方代码视为同一许可。
 

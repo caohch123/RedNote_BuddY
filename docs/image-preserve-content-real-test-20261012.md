@@ -79,7 +79,7 @@
 
 ## 可核查产物
 
-真实测试脚本：`web/scripts/verify-preserve-content-real.mjs`。通过 Microsoft Edge 发起操作，写请求限定到当前方案。每次模型提交前写入独占的尝试记录；重新执行已提交阶段只查询原任务。
+真实测试脚本：`frontend/scripts/verify-preserve-content-real.mjs`。通过 Microsoft Edge 发起操作，写请求限定到当前方案。每次模型提交前写入独占的尝试记录；重新执行已提交阶段只查询原任务。
 
 记录目录：`data/verification/preserve-content-real-20261012/`。包含初始项目快照、每次提交记录、任务结果，以及实际 Edge 截图。生成前会人工核对最终完整提示词，生成后核查图片尺寸、真实输入图片、快照、历史结果和文案是否保持。
 

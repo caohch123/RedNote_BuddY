@@ -135,9 +135,9 @@
 
 ## 实现与验证
 
-- 前端：`web/src/components/ImageRewriteWorkspace.tsx`、`PicturePicker.tsx`、`WorkspaceActionDock.tsx`。
-- 后端：`internal/app/image_workflow_v2.go`、`internal/domain/visual.go`。
-- 提示词与图片适配：`internal/providers/image_flexible.go`、`visual.go`、`image.go`。
+- 前端：`frontend/src/components/ImageRewriteWorkspace.tsx`、`PicturePicker.tsx`、`WorkspaceActionDock.tsx`。
+- 后端：`backend/internal/app/image_workflow_v2.go`、`backend/internal/domain/visual.go`。
+- 提示词与图片适配：`backend/internal/providers/image_flexible.go`、`visual.go`、`image.go`。
 - 本轮验证记录：[分析与三个建议方案](image-proposals-20261014.md)。
 - 上一轮逐项控制：[实现与验收](image-flexible-workflow-20261012.md)。
 - 素材库、搜索与发布边界：[实现与回归记录](media-library-actions-20261012.md)。

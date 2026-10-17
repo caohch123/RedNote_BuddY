@@ -18,7 +18,7 @@
 - `TestImageV2` 定向测试通过（3.567s）；`go test ./...` 全量通过（app 20.754s，providers 1.706s，store cached）。新增 `TestImageV2FullFormPatchPreservesReviewedPromptWithoutReferences` 两个子用例先复现失败，再验证修复；同时断言实际模拟生成使用修改后的提示词和正确数量、尺寸，真正变更特征仍被冲突保护。
 - 真实站点旧方案只读验收通过：三种窗口、历史提示词、结果依据及图片文件正常，无 API 写入。
 
-对应自动化记录：`web/test-results-image-workflow-live-sized/.last-run.json`、`web/test-results-image-preview-bounds/.last-run.json`。
+对应自动化记录：`frontend/test-results-image-workflow-live-sized/.last-run.json`、`frontend/test-results-image-preview-bounds/.last-run.json`。
 
 ## 真实单图准备测试
 
@@ -31,7 +31,7 @@
 - 修复部署后通过真实页面自动保存修改后的提示词；Edge 刷新后文字保持一致，提示词有效标记仍保留，“确认并生成 1 张”可用。只读复核零 API 写入、零页面异常。
 - 完整待确认内容见 [单图测试方案](image-example-review-20261011.md)。
 
-脚本 `web/scripts/verify-image-example.mjs` 默认只读；显式 `--prepare` 才允许当前方案分析、提示词编排及草稿保存。生图、采用、发布和其他项目写操作始终拦截。恢复测试复用已完成分析及有效提示词，避免重复调用。
+脚本 `frontend/scripts/verify-image-example.mjs` 默认只读；显式 `--prepare` 才允许当前方案分析、提示词编排及草稿保存。生图、采用、发布和其他项目写操作始终拦截。恢复测试复用已完成分析及有效提示词，避免重复调用。
 
 真实页面截图、尺寸测量与准备数据：`data/verification/edge-image-example-20261011/`。真实模型的分析、提示词成功与生成图片质量分别验收；本记录不宣称已经生成合格图片。
 
@@ -52,7 +52,7 @@
 
 证据：`generation-attempt.json`、`generation-accepted.json`、`local-result-checks.json` 与 `generated-result-1536.png`、`generated-result-825.png`、`generated-result-597.png`（均位于上述目录）。初次提交后的页面检查发现测试助手以对象引用计算方案序号，误等待“方案 0”；修正为固定方案序号后只读重跑通过，持久化提交记录阻止重复请求，未再次生图。
 
-`web/scripts/generate-confirmed-image-example.mjs` 绑定待确认方案快照；仅显式提交参数允许首次请求，发送前保存请求 ID。重复运行仅查询既有批次，不自动重投、重画、采用或发布。该脚本不包含凭据。
+`frontend/scripts/generate-confirmed-image-example.mjs` 绑定待确认方案快照；仅显式提交参数允许首次请求，发送前保存请求 ID。重复运行仅查询既有批次，不自动重投、重画、采用或发布。该脚本不包含凭据。
 
 ## 本机更新
 

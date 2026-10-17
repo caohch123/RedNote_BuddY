@@ -8,6 +8,6 @@
 
 回归测试使用模拟 API 和独立 Chromium，不访问用户采集数据，不启动 Edge。覆盖表头滚动后立即切换到底部栏、首尾与键盘操作、页面隐藏后调整窗口、导航折叠、工作区切换、拖拽后反向滚动及勾选状态保留，以及发布表格的分页和横向位置保留。
 
-Chromium 测试入口为 `web/playwright.chromium.config.ts`；可通过 `XHS_TEST_CHROMIUM` 指向已有 Chromium 可执行文件，默认 Edge 配置保留。测试命令：`npx playwright test tests/e2e/table-alignment.spec.ts --config playwright.chromium.config.ts`。
+Chromium 测试入口为 `frontend/playwright.chromium.config.ts`；可通过 `XHS_TEST_CHROMIUM` 指向已有 Chromium 可执行文件，默认 Edge 配置保留。测试命令：`npx playwright test tests/e2e/table-alignment.spec.ts --config playwright.chromium.config.ts`。
 
 最终验证：4 个浏览器回归场景各重复 2 次，8 次全部通过；前端 7 个文件共 30 项测试通过；TypeScript 检查和生产构建通过。回归截图：`data/verification/table-alignment-20261016/aligned-table.png`。

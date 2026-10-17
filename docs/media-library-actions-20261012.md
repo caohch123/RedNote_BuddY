@@ -30,13 +30,13 @@
 - 文案编辑中的“版本对比”移到“AI 生成新版本”右侧，同排等高，保留原有对比功能和模块范围。
 - 素材卡片采用固定的操作布局：加入发布素材独占一行，下载与删除并排等宽，三项操作统一为 32px 高。标签可换行，尺寸、时间和操作区在同排卡片内底部对齐；预览完整显示图片。
 - 前端构建通过；现有素材库、搜索、发布边界与项目隔离共 5 项 Edge 回归通过。运行中网站另以 1536、825、593、570 × 751 检查按钮位置、等高、等宽、同行对齐及横向溢出，并人工审阅截图。未产生 API 写操作、脚本异常或项目记录变化。
-- 本次只读验收脚本：`web/scripts/verify-library-ui-readonly.mjs`；证据：`data/verification/media-library-ui-20261012/checks.json` 及同目录截图。
+- 本次只读验收脚本：`frontend/scripts/verify-library-ui-readonly.mjs`；证据：`data/verification/media-library-ui-20261012/checks.json` 及同目录截图。
 
 ## 相关代码
 
-- `web/src/pages/Rewrites.tsx`：发布候选与独立草稿、文案对比范围。
-- `web/src/components/ProjectMediaLibrary.tsx`：加入、删除、错误重试与预览。
-- `web/src/components/PicturePicker.tsx`、`ImageRewriteWorkspace.tsx`：有效搜索字段与删除候选过滤。
-- `internal/app/media_library.go`、`rewrites.go`：项目内删除与视频素材归属。
-- `web/tests/e2e/media-library-actions.spec.ts`、`internal/app/media_library_test.go`：新增回归。
-- `web/scripts/verify-library-readonly.mjs`：实际网站只读检查，禁止所有 API 写操作。
+- `frontend/src/pages/Rewrites.tsx`：发布候选与独立草稿、文案对比范围。
+- `frontend/src/components/ProjectMediaLibrary.tsx`：加入、删除、错误重试与预览。
+- `frontend/src/components/PicturePicker.tsx`、`ImageRewriteWorkspace.tsx`：有效搜索字段与删除候选过滤。
+- `backend/internal/app/media_library.go`、`rewrites.go`：项目内删除与视频素材归属。
+- `frontend/tests/e2e/media-library-actions.spec.ts`、`backend/internal/app/media_library_test.go`：新增回归。
+- `frontend/scripts/verify-library-readonly.mjs`：实际网站只读检查，禁止所有 API 写操作。

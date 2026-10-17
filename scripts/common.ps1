@@ -13,10 +13,10 @@ function Find-WorkbenchTool([string]$Name, [string[]]$Candidates = @()) {
 function Get-WorkbenchTools {
     $bundle = Join-Path $env:USERPROFILE '.cache\codex-runtimes\codex-primary-runtime\dependencies'
     [PSCustomObject]@{
-        Node = Find-WorkbenchTool 'node.exe' @((Join-Path $bundle 'node\bin\node.exe'))
-        Npm = Find-WorkbenchTool 'npm.cmd'
+        Node = Find-WorkbenchTool 'node.exe' @((Join-Path $env:ProgramFiles 'nodejs\node.exe'), (Join-Path $bundle 'node\bin\node.exe'))
+        Npm = Find-WorkbenchTool 'npm.cmd' @((Join-Path $env:ProgramFiles 'nodejs\npm.cmd'))
         Python = Find-WorkbenchTool 'python.exe' @((Join-Path $bundle 'python\python.exe'))
-        Go = Find-WorkbenchTool 'go.exe'
+        Go = Find-WorkbenchTool 'go.exe' @('D:\go\bin\go.exe', (Join-Path $env:ProgramFiles 'Go\bin\go.exe'))
         FFmpeg = Find-WorkbenchTool 'ffmpeg.exe' @((Join-Path $WorkbenchRoot 'tools\ffmpeg\bin\ffmpeg.exe'))
         FFprobe = Find-WorkbenchTool 'ffprobe.exe' @((Join-Path $WorkbenchRoot 'tools\ffmpeg\bin\ffprobe.exe'))
     }

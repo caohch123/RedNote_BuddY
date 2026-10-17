@@ -23,6 +23,6 @@
 - 实际页面脚本首次因虚拟下拉未将目标历史选项提供给可访问查询而超时；方案列表改为非虚拟选项后，最终只读检查通过。失败尝试没有提交生成或修改项目。
 - 后端更新前检查无排队、运行中或结果不明任务，仅重启本项目主进程；采集进程保留。主服务与采集服务健康检查通过。
 
-生产页面证据：`data/verification/edge-image-workflow-20261011/live-checks.json` 及同目录截图。Edge 测试输出：`web/test-results-image-workflow-final-20261011`。验证脚本：`web/scripts/verify-image-workflow.mjs`。
+生产页面证据：`data/verification/edge-image-workflow-20261011/live-checks.json` 及同目录截图。Edge 测试输出：`frontend/test-results-image-workflow-final-20261011`。验证脚本：`frontend/scripts/verify-image-workflow.mjs`。
 
 本次没有生成新的真实图片或提交作品；图片供应商请求使用本地模拟服务。修复证明生成要求、实际请求与结果归属一致，不能据此保证模型在视觉或中文字形上完全遵循要求，真实结果仍需审阅。

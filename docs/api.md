@@ -1,10 +1,10 @@
 # 工作台 API
 
-基路径 `/api/v1`，JSON 字段使用 snake_case。默认来源为 `http://127.0.0.1:8080`。
+基路径 `/api/v1`，JSON 字段使用 snake_case。后端默认地址为 `http://127.0.0.1:8082/api/v1`；前端 `http://127.0.0.1:8080` 通过代理访问同一 API。
 
 普通成功响应直接返回资源；列表响应为 `{items,total}`；错误响应为 `{error,code}`。耗时操作返回 HTTP 202 和 `{job_id,job_ids?}`，通过 `/jobs` 查询进度。
 
-首先调用 `GET /session` 获取 `{csrf_token}`。所有写操作，以及会更新导出状态的 `GET /publications/:id/export`，需要 `X-CSRF-Token`。Host 和 Origin 必须匹配本机工作台。AI 密钥与采集 Cookie 经设置写入，读取仅返回掩码和配置状态；创作平台登录会话由扫码流程取得并由后端加密保存，账号接口只返回显示资料与状态。
+首先调用 `GET /session` 获取 `{csrf_token}`。所有写操作，以及会更新导出状态的 `GET /publications/:id/export`，需要 `X-CSRF-Token`。Host 必须匹配 API 地址；Origin 必须匹配 API 自身或后端明确配置的前端来源，支持 CORS 预检。AI 密钥与采集 Cookie 经设置写入，读取仅返回掩码和配置状态；创作平台登录会话由扫码流程取得并由后端加密保存，账号接口只返回显示资料与状态。
 
 ## 工作区范围
 
@@ -92,7 +92,7 @@ AI 服务配置共用。保存设置前获取最新配置，仅提交脏字段�
 
 发布状态额外包括 publishing、publish_failed、submission_unknown。真正收到作品 ID 才更新 published；任务入队和发布稿状态原子写入。进程在发布时退出、最终请求超时或成功响应缺少作品 ID 时不会自动重复提交。账号会话单独保存，持久化任务不含 Cookie。确认 token 不进入任务内容或公开 API 日志。
 
-数据库迁移位于 `internal/store/migrations/001_initial.sql`，由 Go 程序嵌入并在启动时执行。完整备份必须包含数据目录内的数据库及全部媒体文件。
+数据库迁移位于 `backend/internal/store/migrations/001_initial.sql`，由 Go 程序嵌入并在启动时执行。完整备份必须包含数据目录内的数据库及全部媒体文件。
 
 
 ## 图片仿写 V2

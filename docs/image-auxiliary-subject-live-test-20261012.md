@@ -67,4 +67,4 @@ Edge 在 1536、825、597、569 × 751 下验收当前真实方案、提示词�
 - `quality-review.json`：实际看图结论与构图限制。
 - `compose-*.png`、`generate-*.png`：Edge 截图。
 
-测试工具：`web/scripts/verify-auxiliary-subject-example.mjs`、`web/scripts/review-auxiliary-subject-example.mjs`。这些脚本固定当前例子的项目和素材，适用于复核此例，不应改 ID 后批量运行真实生成。
+测试工具：`frontend/scripts/verify-auxiliary-subject-example.mjs`、`frontend/scripts/review-auxiliary-subject-example.mjs`。这些脚本固定当前例子的项目和素材，适用于复核此例，不应改 ID 后批量运行真实生成。

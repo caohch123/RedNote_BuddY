@@ -18,4 +18,4 @@
 
 新增回归测试使用真实上游 `/xhs/detail` 处理器和元数据、图片地址解析流程，仅模拟网络 HTML，验证笔记内容以及日志、响应不包含测试 Cookie。Python 采集服务的 3 项测试全部通过。随后在真实工作台点击“重新采集”，验证上述成功结果。
 
-浏览器截图：`web/qa/real-xhs-collection.jpg`。
+浏览器截图：`frontend/qa/real-xhs-collection.jpg`。

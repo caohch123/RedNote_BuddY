@@ -22,7 +22,7 @@ try {
         if ($tools.$name) { Write-Host "[DISCOVERED] $name : $($tools.$name)" }
     }
 }
-foreach ($file in @('bin\xhs-workbench.exe','web\dist\index.html','engine\.venv\Scripts\python.exe','engine\upstream.lock.json','publisher\.venv\Scripts\python.exe','publisher\bridge.py','publisher\upstream.lock.json','publisher\vendor\Spider_XHS\node_modules\crypto-js\package.json')) {
+foreach ($file in @('bin\xhs-workbench.exe','backend\go.mod','frontend\dist\index.html','frontend\server.mjs','engine\.venv\Scripts\python.exe','engine\upstream.lock.json','publisher\.venv\Scripts\python.exe','publisher\bridge.py','publisher\upstream.lock.json','publisher\vendor\Spider_XHS\node_modules\crypto-js\package.json')) {
     if (Test-Path -LiteralPath (Join-Path $WorkbenchRoot $file)) { Write-Host "[OK] $file" } else { Write-Warning "[MISSING] $file" }
 }
 foreach ($record in @(Get-ProcessRecords)) { Write-Host "$($record.role) PID $($record.pid): $(Test-WorkbenchProcess $record)" }

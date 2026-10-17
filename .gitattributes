@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+# Keep the pinned publisher source byte-for-byte consistent with its manifest.
+publisher/vendor/** -text
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary

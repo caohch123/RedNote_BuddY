@@ -7,12 +7,12 @@
 | 内容 | 处理 | 数量 |
 | --- | --- | --- |
 | 小红书发布结果不明测试 | 两项使用相同状态的场景合并为一项，保留后台任务禁止重试、稿件禁止发布、人工核对说明和零提交次数等全部独有断言 | 减少一项重复场景和一次重复初始化 |
-| 旧浏览器结果 | 移出 `web/test-results*` 的 25 个历史目录和根目录的一份测试结果 | 26 个目录 |
+| 旧浏览器结果 | 移出 `frontend/test-results*` 的 25 个历史目录和根目录的一份测试结果 | 26 个目录 |
 | 旧渲染测试输出 | 移出 `renderer/test-output`，含生成的旧 HTML composition、脚本、字体副本和媒体 | 246 个文件 |
 | Python 编译缓存 | 移出 engine、publisher 和 publisher/tests 的旧 `__pycache__` | 5 个文件 |
-| 废弃图标 | 移出未引用的 `web/public/brand.png`；应用与 favicon 使用的 `brand-book.png` 保留 | 1 个文件 |
+| 废弃图标 | 移出未引用的 `frontend/public/brand.png`；应用与 favicon 使用的 `brand-book.png` 保留 | 1 个文件 |
 | 历史可执行文件 | 移出 6 份历史备份、`xhs-workbench.exe~` 和与当前程序 SHA-256 相同的 `xhs-workbench-next.exe`；逐一排除运行中的程序 | 8 个文件 |
-| 忽略规则 | 将 `web/test-results*/` 扩展为 `test-results*/`，同时覆盖根目录和子目录的测试输出 | 一处规则调整 |
+| 忽略规则 | 将 `frontend/test-results*/` 扩展为 `test-results*/`，同时覆盖根目录和子目录的测试输出 | 一处规则调整 |
 
 合计从项目移出 **39 个目标、440 个文件、376,292,213 字节（358.86 MiB）**。数量不包含本次检查生成的可执行文件和新的测试结果。
 
@@ -28,7 +28,7 @@
 - 新构建的 Gin 程序使用临时数据目录、独立端口 `127.0.0.1:18089` 启动。健康检查、数据库、CSRF 会话、首页、当前图标和两个默认工作区通过验证，采集列表为空；检查后关闭本次独立进程。个人 `data` 和运行中的 `127.0.0.1:8080` 服务未用于写入测试数据。
 
 - 浏览器完整运行共 55 项：52 项通过、2 项按环境条件跳过、1 项首次失败。失败项为抖音官方编辑器预览的 5 秒可见性断言；在不修改业务代码或该测试的情况下，单独复测通过。合并后的“小红书发布结果不明”用例通过。全量首轮并非零失败，以上如实保留运行结果。
-- 最新浏览器证据保留在 `web/test-results-cleanup-verify` 和 `web/test-results-cleanup-retry`；这些新结果由忽略规则排除，不属于旧产物清单。
+- 最新浏览器证据保留在 `frontend/test-results-cleanup-verify` 和 `frontend/test-results-cleanup-retry`；这些新结果由忽略规则排除，不属于旧产物清单。
 
 浏览器检查命令：
 

@@ -35,7 +35,7 @@ npx playwright test tests/e2e/image-rewrite.spec.ts tests/e2e/project-media-libr
 
 过程中的问题均已定位并复核：图标按钮与文字的可访问名称不一致，已为关键按钮补明确名称；Ant Radio 使用可见标签完成真实点击；保存错误同时出现在通知和提示栏，测试改为断言对应提示栏。旧视频用例仍断言“先保存文案再打开视频”并在视频页寻找文案保存按钮，已更新为既有模块独立规则；未因此更改产品视频行为。
 
-最终补充单图分析入口后，重跑图片测试发现任务完成通知可能覆盖用户刚切回的阶段。已移除生成完成后的重复跳转，提示词编排完成也只在用户尚未切换阶段时导航；13 项图片流程随后重跑全部通过。最终图片测试输出目录为 `web/test-results-image-workflow-v2-final`。
+最终补充单图分析入口后，重跑图片测试发现任务完成通知可能覆盖用户刚切回的阶段。已移除生成完成后的重复跳转，提示词编排完成也只在用户尚未切换阶段时导航；13 项图片流程随后重跑全部通过。最终图片测试输出目录为 `frontend/test-results-image-workflow-v2-final`。
 
 Edge 截图：`data/verification/image-workflow-v2-edge-1536.png`、`image-workflow-v2-edge-825.png`、`image-workflow-v2-edge-597.png`。模拟图片为测试图片，不能作为生成质量验收。
 

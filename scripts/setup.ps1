@@ -17,7 +17,7 @@ try {
         & $tools.Python (Join-Path $WorkbenchRoot 'publisher\prepare.py')
         if ($LASTEXITCODE -ne 0) { throw 'Publisher preparation failed.' }
     }
-    $dependencyDirectories = @('web')
+    $dependencyDirectories = @('frontend')
     foreach ($directory in $dependencyDirectories) {
         Push-Location (Join-Path $WorkbenchRoot $directory)
         try {
@@ -26,15 +26,8 @@ try {
         } finally { Pop-Location }
     }
     if (-not $SkipBuild) {
-        Push-Location (Join-Path $WorkbenchRoot 'web')
-        try { & $tools.Npm run build; if ($LASTEXITCODE -ne 0) { throw 'Frontend build failed.' } } finally { Pop-Location }
-        New-Item -ItemType Directory -Path (Join-Path $WorkbenchRoot 'bin') -Force | Out-Null
-        $previousCGO = $env:CGO_ENABLED; $previousArch = $env:GOARCH
-        try {
-            $env:CGO_ENABLED = '0'; $env:GOARCH = 'amd64'
-            & $tools.Go build -trimpath -o (Join-Path $WorkbenchRoot 'bin\xhs-workbench.exe') ./cmd/workbench
-            if ($LASTEXITCODE -ne 0) { throw 'Go backend build failed.' }
-        } finally { $env:CGO_ENABLED = $previousCGO; $env:GOARCH = $previousArch }
+        & (Join-Path $PSScriptRoot 'build-frontend.ps1')
+        & (Join-Path $PSScriptRoot 'build-backend.ps1')
     }
 } finally { Pop-Location }
 & (Join-Path $PSScriptRoot 'doctor.ps1')

@@ -1,411 +1,165 @@
-# 小红书内容工作台
+# Collect_and_imitate · 小红书内容工作台
 
-> 项目交接前请先阅读：[项目进度与交接说明（2026-10-11）](docs/project-progress-20261011.md)
+项目采用前后端分离结构：React 前端与 Go API 各自构建、启动和更新，通过 HTTP API 通信。采集、仿写、图片和视频工作流、素材库、发布管理及原有数据均保留。
 
-这是一个基于 Gin 的本机个人内容工作台，面向小红书。工作区包含采集库、仿写库、发布管理三大入口，形成一条完整链路：小红书链接采集 → 本地媒体落盘 → OCR / 视频转写 → 版本化文案仿写 → 图片仿写 / 动态视频生成 → 本人扫码登录发布 → 发布包导出。
+仓库：[caohch123/Collect_and_imitate](https://github.com/caohch123/Collect_and_imitate)
 
-## 文档导航
+## 功能
 
-- [项目概览](#项目概览)
-- [快速开始](#快速开始)
-- [核心使用流程](#核心使用流程)
-- [服务配置](#服务配置)
-- [架构与数据](#架构与数据)
-- [视频工作进程](#视频工作进程)
-- [开发与验证](#开发与验证)
-- [第三方来源](#第三方来源)
+- **采集库**：小红书链接与分享文本采集、本地素材保存、OCR 与视频转写。
+- **仿写库**：从来源笔记或空白项目开始创作，保留文案版本并确认采用。
+- **图片与视频**：选择或上传参考素材，分析方向、审阅提示词，再调用已配置的模型生成。
+- **素材管理**：按项目组织图片和视频，选择发布素材并调整顺序。
+- **发布管理**：文案与媒体校验、发布稿快照、导出，以及本人扫码后的发布操作。
+- **任务管理**：后台执行、状态查询、失败重试和历史清理。
 
-## 项目概览
+## 架构
 
-### 1. 主要能力
+```mermaid
+flowchart LR
+    Browser[浏览器] --> Frontend[React 前端 · 8080]
+    Frontend -->|HTTP API 代理| Backend[Go / Gin API · 8082]
+    Backend --> Data[(SQLite 与本地媒体)]
+    Backend --> Collector[采集服务 · 5556]
+    Backend --> Adapters[模型与发布适配器]
+```
 
-- 采集：支持小红书 URL、批量链接、分享文本等内容入库，按作品 ID 去重。
-- 仿写：对采集内容进行版本化处理，保留原文与输入快照，可继续生成发布稿和视频稿。
-- 图片仿写：一张主图与最多两张辅助图；八项要求分别选择图片来源、自定义或交给模型，主体与动作独立。审阅提示词后生成 1–4 张图片，也支持不借用图片特征的自定义生成。见 [V2 工作流与接口](docs/image-workflow-v2.md)。
-- 视频仿写：自动带入原视频，选择参考视频／图片及要求，审阅最终提示词后确认生成动态视频。
-- 发布：支持扫码登录和上传确认，按账号、文案、素材顺序和可见性进行最终确认发布。
-- 资源管理：素材库、项目记录、发布稿、任务状态均按工作区和项目隔离。
+## 目录
 
-### 2. 工作区逻辑
+```text
+xhs-workbench/
+├── frontend/         React + TypeScript + Vite；独立前端服务
+│   ├── src/          页面、组件、状态与 API 客户端
+│   ├── tests/        界面与前端服务测试
+│   ├── server.mjs    生产静态服务及 API 反向代理
+│   └── .env.example  API 地址与开发代理配置
+├── backend/          Go + Gin；独立 API 与任务服务
+│   ├── cmd/workbench/
+│   ├── internal/     业务、存储、服务适配器
+│   └── go.mod
+├── engine/           后端采集适配器及其独立 Python 环境
+├── publisher/        后端发布适配器及其独立 Python/Node 环境
+├── style-library/    后端读取的参考图库
+├── data/             原有数据库、账号配置、素材和任务记录
+├── bin/              后端可执行文件
+├── scripts/          安装、独立构建、独立启动与停止
+└── docs/             功能、API 和架构文档
+```
 
-- 工作台面向小红书，采集记录、仿写项目、视频项目、任务、发布稿、账号面板统一管理。
-- 与小红书不匹配的历史数据保留在数据库，但会被隐藏，不能预览、导出或发布。
-
-### 3. 素材与参考图
-
-- 素材库位于每个仿写项目内部，与文案编辑、图片仿写、视频仿写并列。
-- 生成结果默认只入素材库；采用或从库加入后才进入发布素材。素材库支持删除，已有历史与发布引用保留；版本对比仅位于文案编辑。见 [素材库与发布边界修复记录](docs/media-library-actions-20261012.md)。
-- 展示当前项目已落地的图片仿写结果、视频生成配图、视频成片及用户上传图片，支持预览、搜索、来源与类型筛选及下载。
-- 发布素材页签用于选择素材和调整发布顺序。
-- 辅助图可从官方参考图库选择，支持领域分类和搜索；当前交付代码与上架逻辑不预填或生成图片。
-- 参考图配置和本地文件放置方式见 [风格图库说明](style-library/README.md)。
-
-### 4. 登录与发布说明
-
-- 普通登录和账号刷新不启动浏览器；只有进入发布阶段或主动打开验证窗口时才会启用 Edge。
-- 详细说明见：[扫码登录与发布](docs/xhs-publishing.md)。
+运行资源留在原路径，数据库没有迁移或复制。后端通过 `--root` 指定项目根目录，前端不读取数据库、账号会话或模型密钥。
 
 ## 快速开始
 
-### 环境要求
-
-- Windows x64
-- Go >= 1.26
-- Node.js >= 22
-- Python >= 3.12
-- FFmpeg / FFprobe
-- 已安装的 Chrome 或 Edge
-
-SQLite 使用纯 Go 驱动，不需要 GCC 或单独安装数据库。
-
-### 一键启动
-
-在项目目录打开 PowerShell：
+环境：Windows x64、Go 1.26+、Node.js 22+、Python 3.12+，媒体处理需要 FFmpeg / FFprobe。已有环境无需重新安装。
 
 ```powershell
+# 获取源码
+git clone https://github.com/caohch123/Collect_and_imitate.git
+cd Collect_and_imitate
+
+# 首次安装和构建
 .\scripts\setup.ps1
+
+# 启动前端、后端和采集服务
 .\scripts\start.ps1
 ```
 
-默认访问地址：
+首次准备环境需要联网下载依赖。可用 `setup.ps1 -PythonPath 'C:\Python312\python.exe'` 指定 Python。FFmpeg / FFprobe 可安装到系统 PATH，或在工作台设置页指定路径。
 
-- 工作台：`http://127.0.0.1:8080`
-- 采集服务：`http://127.0.0.1:5556`
+页面打开后，在设置中填写自己的模型地址、模型名称和密钥。示例配置见 [config.example.json](config.example.json)，示例不含真实凭据。
 
-启动脚本会将辅助进程放到后台，并在准备好后自动打开浏览器。重复启动会复用本项目已记录的进程。
+默认地址：
 
-### 健康检查与停止
+| 服务 | 地址 | 职责 |
+| --- | --- | --- |
+| 前端 | http://127.0.0.1:8080 | 页面与 /api 代理 |
+| 后端 | http://127.0.0.1:8082/api/v1 | 业务 API、数据与任务 |
+| 采集服务 | http://127.0.0.1:5556 | 小红书内容采集 |
+
+前端和后端是两个独立进程。后端不再提供 HTML 或前端构建产物。前端生产服务仅需 Node.js 和 `frontend/dist`，运行时不需要安装 React/Vite 开发依赖。
+
+### 独立构建与启动
 
 ```powershell
+.\scripts\build-frontend.ps1
+.\scripts\build-backend.ps1
+
+.\scripts\start-backend.ps1
+.\scripts\start-frontend.ps1
+```
+
+已有后端运行时，替换可执行文件前应停止对应进程。`start-backend.ps1` 不启动采集服务；需要完整功能时使用一键启动，或保留现有采集服务。
+
+自定义端口和数据目录：
+
+```powershell
+.\scripts\start.ps1 -Address 127.0.0.1:8090 -ApiAddress 127.0.0.1:8092 -DataDir data -NoBrowser
 .\scripts\doctor.ps1
 .\scripts\stop.ps1
 ```
 
-说明：
+单独停止前端或后端可使用 `stop.ps1 -Service frontend` / `stop.ps1 -Service backend`，不会停止另一端或采集服务。
 
-- `doctor.ps1` 仅检查本地依赖和进程状态，不暴露密钥。
-- `stop.ps1` 仅终止记录中路径和创建时间均匹配的本项目进程。
+更新源码和重建时，先停止对应服务，再构建与启动。已有用户请保留完整 `data/` 目录；数据库和媒体共同组成可恢复的数据备份。
 
-### 常用启动参数
+脚本复用已记录的进程，并核对可执行文件、创建时间和项目路径，避免操作其他项目。
 
-- `setup.ps1 -PythonPath 'C:\Python312\python.exe'`：指定 Python 路径
-- `start.ps1 -NoBrowser`：仅启动服务，不打开浏览器
-- `start.ps1 -SkipEngine`：使用已有采集服务
-- `start.ps1 -Address '127.0.0.1:8081' -DataDir 'data-alternate'`：自定义端口和数据目录
+## 开发
 
-说明：
-
-- 首次安装需要访问 npm、Go 模块代理、PyPI 和 GitHub。
-- 采集引擎准备脚本会固定 XHS-Downloader 2.8 的提交 `47840a1bee8438324ff10753c4291148c46071c8`，并校验下载校验和。
-- 依赖会使用独立 `.venv` 和上游锁文件安装，避免污染全局环境。
-- FFmpeg / FFprobe 可以安装到系统 PATH，也可以放到项目 `tools\ffmpeg\bin` 中。在设置的本地依赖列表统一编辑工具路径：支持完整路径、程序名、项目相对路径及留空自动检测。Node.js 配置用于小红书签名，检测与实际执行使用同一路径。详见[本地依赖说明](docs/local-dependencies.md)。
-- 自定义 Chromium 可通过环境变量 `HYPERFRAMES_BROWSER_PATH` 指定。
-
-## 核心使用流程
-
-> 先完成采集，再进行仿写和发布。
-
-### 1. 设置
-
-管理小红书账号和采集环境：
-
-- 可填写采集 Cookie 和采集服务地址。
-- AI 服务的 API 地址、模型和密钥共用配置。
-- 密钥由后端保存，Windows 下使用 DPAPI 保护；读取时仅返回掩码和状态。
-
-### 2. 采集库
-
-- 粘贴小红书的 URL、多链接或分享文字（单次最多 50 条）。
-- 按作品 ID 去重。
-- 可查看下载、OCR、转写的状态，并在详情中修正提取文字后重试失败步骤。
-
-### 3. 仿写库
-
-- 选择采集记录加入仿写。
-- 配置目标读者、语气、长度以及补充要求。
-- 文本生成自动读取来源笔记的完整标题、正文和所有可用 OCR / 转写（含人工修正），无需手动勾选。
-- 每次生成或手动保存都会创建新版本，原文和本次输入快照会保留。
-- 确认版本后，可创建小红书发布稿，视频稿从“视频仿写”页签进入。
-
-### 4. 图片仿写 / 视频仿写
-
-- 文案、图片、视频分别独立处理；未编辑时自动沿用已有内容。
-- 小红书支持七项图片特征分析、自定义风格以及参考图生成。
-- 图片仿写结果只更新发布素材，不覆盖文案编辑内容。
-- 视频独立使用原视频、参考素材和补充要求；可从纯文字开始，不自动附加正文。
-- 审阅可编辑的最终提示词后确认生成单条动态视频；原生声音、时长、比例和分辨率可选。
-- 视频结果默认只进素材库，采用后才调整发布素材；旧配音合成流程已移除。
-- 详细操作步骤见：[图片与视频仿写](docs/visual-rewrites.md)。
-
-### 5. 发布管理
-
-- 显示小红书的发布账号、稿件与创作平台入口。
-- 扫码登录、核对账号、文案、素材顺序和公开状态后确认提交。
-- 任务收到真实作品 ID 后才记为“已发布”。
-- 也支持复制文案、素材下载、导出 ZIP、手动记录发布结果。导出与复制不会标记成功。
-
-### 6. 数据管理与删除
-
-- 删除采集记录、仿写项目、制作项目、发布稿均具备入口和二次确认。
-- 删除来源时，会清除关联的仿写、制作、发布稿、任务和不再被用到的本地媒体。
-- 仅影响本机，不会删除已发布的平台作品。
-- 此操作没有回收站，请务必先备份需要保留的数据。
-
-## 服务配置
-
-`config.example.json` 展示设置接口结构，实际密钥应通过设置页面保存，不要直接提交到源码。各能力独立配置，完整协议说明见：[服务适配器说明](internal/providers/README.md)、[API 文档](docs/api.md)。
-
-| 能力 | 默认协议与模型 |
-| --- | --- |
-| 文案仿写 / 脚本编排 | 百炼兼容 Chat Completions，`qwen-plus`；可替换支持 JSON 的文本接口 |
-| 图片特征分析 | 多模态 Chat Completions，`qwen3-vl-plus` |
-| 图片 OCR | 百炼视觉文字接口，`qwen3.5-ocr` |
-| 视频转写 | 百炼 WebSocket，`paraformer-realtime-v2`；上传 FFmpeg 提取的 PCM |
-| 视频仿写 | 阿里云百炼万相3.0，原生异步API，支持参考素材和模型原生声音 |
-| 图片生成 | 用户配置兼容 `/images/generations` 的 API 地址、模型和密钥，初始为待配置 |
-
-说明：
-
-- 模型标识需以供应商对当前账号开放的模型为准。
-- 图片生成连接检测只会查询 `/models`，不会创建图片，也不保证供应商的实际调用权限。
-- 图片生成请求结果不明时会暂停，需要核查供应商记录；不会在重启后自动重复提交。
-- 采集调用 XHS-Downloader 的 `POST /xhs/detail`，固定使用 `download=false` 和 `check_record=false`。
-- Gin 会自行去重并保存媒体，上游返回的敏感参数不会原样返回前端。
-
-## 架构与数据
-
-### 运行时组件与通信
-
-```mermaid
-flowchart LR
-    user["用户"]
-    subgraph local["本机工作台（默认仅监听 127.0.0.1）"]
-        browser["浏览器<br/>React + TypeScript + Ant Design"]
-        gin["Gin 工作台<br/>cmd/workbench"]
-        subgraph backend["internal"]
-            api["HTTP API<br/>/api/v1 · CSRF · 平台范围校验"]
-            app["应用服务<br/>采集 · 仿写 · 视频 · 发布 · 任务"]
-            providers["服务适配器<br/>AI / OCR / 转写 / 图片与视频生成"]
-            store["数据访问与领域逻辑<br/>store / domain"]
-        end
-        db[("SQLite<br/>工作区数据 · 任务队列 · 版本快照")]
-        files[("本地数据目录<br/>媒体 · 成片 · 配置 · 日志")]
-        engine["采集服务<br/>独立 Python 进程"]
-        publisher["发布适配器<br/>独立 Python / Node 进程"]
-        ffmpeg["FFmpeg / FFprobe"]
-    end
-    xhs["小红书平台"]
-    ai["已配置的 AI 服务"]
-
-    user --> browser
-    browser <-->|"HTTP · JSON · 任务状态轮询"| gin
-    gin --> api --> app
-    app --> store
-    store <--> db
-    app <--> files
-    app -->|"HTTP · POST /xhs/detail"| engine
-    app <-->|"标准输入 / 输出"| publisher
-    app <-->|"按能力调用"| providers
-    providers <-->|"供应商 API"| ai
-    publisher <-->|"本人扫码确认 / 发布"| xhs
-```
-
-### 主要数据流
-
-```mermaid
-flowchart TD
-    input["提交小红书链接 / 分享文本"]
-    collect["采集并创建任务"]
-    engine["Python 采集服务<br/>XHS-Downloader"]
-    persist["保存采集记录与本地媒体"]
-    extract["OCR / 视频转写<br/>失败步骤可单独重试"]
-    rewrite["仿写生成或手动编辑<br/>每次保存形成版本快照"]
-    media{"选择创作方式"}
-    image["图片仿写<br/>分析 / 参考图 / 生成"]
-    video["视频仿写<br/>素材 / 脚本 / 动态生成"]
-    output["项目素材库<br/>图片 · MP4 · 封面 · 字幕"]
-    confirm["选择发布素材并确认版本"]
-    draft["创建发布稿快照"]
-    xhs["小红书扫码登录与发布"]
-    export["复制 / 下载 / 导出 ZIP"]
-    status["仅收到可靠作品 ID<br/>才记录为已发布"]
-
-    input --> collect --> engine --> persist --> extract --> rewrite --> media
-    media --> image --> output
-    media --> video --> output
-    output --> confirm --> draft
-    draft --> export
-    draft --> xhs --> status
-```
-
-采集任务、仿写版本、视频项目和发布稿都关联所属工作区；发布稿保存确认版本与所选素材的快照。任务队列和业务记录持久化在 SQLite，本地媒体与渲染产物保存在数据目录中。
-
-### 代码目录
-
-```text
-xhs-workbench/
-├── cmd/
-│   └── workbench/
-│       └── main.go                 程序入口：加载配置并启动 Gin
-├── internal/
-│   ├── app/                        应用用例、业务流程与后台任务
-│   │   ├── app.go                  应用依赖与服务初始化
-│   │   ├── production.go           生产环境组装
-│   │   ├── workers.go              持久化任务的执行与恢复
-│   │   ├── workspace*.go           工作区注册、平台隔离与生命周期
-│   │   ├── collections.go          采集记录与状态管理
-│   │   ├── rewrites.go             仿写项目与版本管理
-│   │   ├── visual_rewrites.go      图片仿写与视觉生成流程
-│   │   ├── video_rewrite_v2.go     动态视频仿写工作流
-│   │   ├── videos.go               视频项目与渲染任务
-│   │   ├── publications.go         发布稿、导出与发布状态
-│   │   ├── xhs_*.go                小红书账号与发布流程
-│   │   ├── media*.go               媒体库、选择、上传与删除
-│   │   ├── settings.go             设置、密钥保护及配置读取
-│   │   └── *_test.go               应用逻辑与集成测试
-│   ├── domain/                     领域类型与共享规则
-│   │   ├── domain.go
-│   │   ├── note_titles.go
-│   │   └── visual.go
-│   ├── providers/                  外部服务与子进程适配器
-│   │   ├── client.go               通用 HTTP / 模型客户端
-│   │   ├── collector.go            采集服务客户端
-│   │   ├── audio.go                转写与语音能力
-│   │   ├── image.go                图片生成能力
-│   │   ├── visual.go               视觉分析能力
-│   │   ├── xhs_publisher*.go       小红书发布进程适配
-│   └── store/                      SQLite 持久化、事务与迁移
-│       ├── store.go
-│       ├── transaction.go
-│       └── migrations/
-│           └── 001_initial.sql
-├── web/                            React + TypeScript + Vite + Ant Design
-│   ├── src/
-│   │   ├── main.tsx, App.tsx       前端入口与应用外壳
-│   │   ├── api.ts, types.ts        API 客户端与共享类型
-│   │   ├── platform.ts             平台上下文与平台切换
-│   │   ├── workspace*.tsx          工作区状态与注册
-│   │   ├── pages/                  采集、仿写、发布、设置页面
-│   │   ├── components/             账号面板、媒体库、图片/视频工作区等
-│   │   ├── hooks.ts, utils.ts      前端 hooks 与通用工具
-│   │   └── style.css               全局样式
-│   ├── public/                     静态资源
-│   ├── tests/                      浏览器端到端测试
-│   ├── qa/                         界面验收辅助资源
-│   └── scripts/                    前端测试与开发辅助脚本
-├── engine/                         XHS-Downloader 采集服务
-│   ├── server.py                   Python HTTP 服务入口
-│   ├── prepare.py                  固定版本准备与依赖安装
-│   ├── upstream.lock.json          上游版本与校验信息
-│   └── vendor/                     固定提交的上游源码
-├── publisher/                      小红书扫码登录与发布适配器
-│   ├── bridge.py                   Python stdio 桥接入口
-│   ├── signer.cjs                  Node 签名辅助程序
-│   ├── prepare.py                  发布组件准备脚本
-│   ├── upstream.lock.json          上游版本与校验信息
-│   └── tests/                      桥接测试
-├── scripts/                        Windows 环境与进程管理
-│   ├── setup.ps1                   安装与准备依赖
-│   ├── start.ps1                   启动工作台及辅助服务
-│   ├── stop.ps1                    停止本项目启动的进程
-│   ├── doctor.ps1                  环境与进程检查
-│   └── common.ps1                  脚本共享逻辑
-├── docs/                           API、发布、登录、验收与交接说明
-├── style-library/                  风格参考图库配置与使用说明
-├── data/                           本机运行数据，不是源代码
-│   ├── SQLite 数据库与受保护配置
-│   ├── 采集媒体、项目素材与视频成片
-│   └── 任务状态、渲染版本与日志
-├── config.example.json              配置结构示例（不含真实密钥）
-├── go.mod                           Go 模块与依赖声明
-└── README.md                        项目说明、启动方式与架构文档
-```
-
-上图列出核心源码与职责，未展开测试文件和运行时依赖目录（例如 `node_modules`、`.venv`）；数据目录中的实际文件由运行时生成。
-
-### 关键约定
-
-- 持久化任务队列保存在 SQLite 中，服务重启后可恢复待执行任务。
-- 采集、视频生成、渲染分别单并发，OCR 为双并发。
-- 失败步骤可独立重试；采集更新不会覆盖已有的仿写和制作版本。
-- API 基路径为 `/api/v1`，资源分组包括：
-  - `/workspaces`
-  - `/collections`
-  - `/rewrites`
-  - `/video-projects`
-  - `/publications`
-  - `/jobs`
-  - `/settings`
-  - `/assets`
-- 请求中带 `platform=xiaohongshu`，后端会据此限制资源的读取和修改。
-- `GET /session` 返回 CSRF token；写操作需要同源和 `X-CSRF-Token`。
-- 耗时操作返回 `202 {job_id}`，前端每两秒轮询状态。
-- 资源接口返回 JSON，列表返回 `{items,total}`，错误返回 `{error,code}`。
-
-### 数据安全与备份
-
-- 服务默认仅监听回环地址。
-- 上传素材按资源 ID 提供访问，并限制在数据目录内。
-- 采集下载会校验来源域名、重定向和目标 IP。
-- 发布稿是已确认版本和选定素材的快照；旧成片会保留，但当前稿会提示内容不一致。
-- 备份时请先停止服务，再完整复制实际数据目录；数据库和媒体必须一起备份。
-- DPAPI 密文与 Windows 用户绑定，迁移到其他用户后需重新填写密钥。
-
-## 视频生成
-
-视频使用百炼 `wan3.0-video`／`wan3.0-video-prime` 原生异步接口和独立的三阶段工作台，详见 [视频仿写V2](docs/video-rewrite-v2.md)。参考视频由确认后的任务自动上传至百炼私有临时空间，无需手填公网链接或配置云存储。最终提示词可直接编辑，按确认内容原样提交。单条1–15秒、最多100MB，合计最多15秒，输入与输出时长合计最多30秒；纯文字／图片输出2–30秒。原供应商密钥不会自动带入百炼，请在设置中配置同地域的原生API地址、模型和密钥。生成脚本不会生视频；只有用户确认后才提交一次视频生成任务。结果先进入素材库，未知提交不自动重投。
-
-## 开发与验证
-
-### Go 与前端构建
+后端终端：
 
 ```powershell
-$env:CGO_ENABLED='0'; $env:GOARCH='amd64'
-go test ./...
-go build -o .\bin\xhs-workbench.exe ./cmd/workbench
+cd backend
+$env:CGO_ENABLED='0'
+$env:GOARCH='amd64'
+go run ./cmd/workbench --root .. --addr 127.0.0.1:8082
 ```
 
-在 `web` 中执行：
+前端终端：
 
 ```powershell
-npm run build
+cd frontend
+npm ci
 npm run dev
 ```
 
-前端测试：
+开发页面为 http://127.0.0.1:5173，Vite 把 `/api` 代理到 8082。修改后端无需构建前端；修改前端无需重启后端。
 
-- 单元测试：`npm test`
-- 浏览器测试：`npm run test:e2e`（固定使用本机 Microsoft Edge 和 Vite 预览）
+需要直接访问独立 API 时，将 `frontend/.env.example` 复制为 `.env.local`，配置 `VITE_API_BASE_URL=http://127.0.0.1:8082/api/v1`。开发代理目标为 `API_PROXY_TARGET`。环境变量在前端构建时公开，不能放密钥。跨端口请求通过后端明确的来源白名单，并继续校验 CSRF。
 
-### Python 服务单独运行
-
-```powershell
-engine\.venv\Scripts\python.exe engine\server.py --data-dir data\engine --port 5556
-```
-
-### 视频模拟回归
+## 测试
 
 ```powershell
-go test ./internal/app -run 'TestVideoV2|TestRetiredVideo' -count=1
+cd backend
+go test -count=1 ./...
+
+cd ../frontend
+npm test
+npm run test:server
+npm run test:e2e
 ```
 
-模拟服务验证初始化、脚本、请求一致性、重复提交及恢复；真实生成须在用户审阅具体脚本后单独验收。旧配音、分镜和渲染任务已停用，已有文件及发布稿保留。
+默认界面回归使用独立开发服务器与模拟接口。真实模型联调属于单独的显式测试流程，不应与普通回归混用。最近一次架构拆分已通过 470 项后端测试及子用例、30 项前端基础测试和 16 项界面回归；详细记录见 [架构验证](docs/frontend-backend.md#本次验证2026-10-17)。
 
-### 验收重点
+## 数据与本地配置
 
-- 重复采集与重试
-- 局部失败与恢复
-- 仿写版本绑定
-- 远程视频任务恢复
-- 脚本及素材链接一致性
-- 原生声音与输出参数
-- 旧任务停用及引用保护
-- 发布 ZIP 与确认版本一致
-- 导出后状态必须不变为“已发布”
+- 仓库只提交源码、依赖锁文件、示例配置和说明文档。
+- `data/`、`bin/`、虚拟环境、`node_modules/`、前端构建产物、测试输出、`.env.local` 与本地助手记忆不提交。
+- 模型密钥、采集 Cookie 和创作平台会话由后端管理；Windows 下使用 DPAPI 保护敏感配置。前端环境变量会公开到浏览器，不能填写密钥。
+- `data/` 不属于安装包或 Git 备份；更新和迁移前应另行保存。
 
-## 第三方来源
+## 文档
 
-- [XHS-Downloader 2.8](https://github.com/JoeanAmier/XHS-Downloader/tree/47840a1bee8438324ff10753c4291148c46071c8) — GPL-3.0；采集服务保留原源码、许可证和固定提交说明。
-- [FFmpeg](https://ffmpeg.org/) — 采用本机已安装版本；其构建和许可证以对应分发包为准。
+- [前后端分离与部署说明](docs/frontend-backend.md)
+- [API 文档](docs/api.md)
+- [本地依赖](docs/local-dependencies.md)
+- [图片仿写工作流](docs/image-workflow-v2.md)
+- [素材库与发布边界](docs/media-library-actions-20261012.md)
+- [空白项目](docs/rewrite-blank-project-20261017.md)
+- [第三方发布适配器说明](publisher/README.md)
+- [后端服务适配器](backend/internal/providers/README.md)
+- [第三方来源与声明](publisher/NOTICE.md)
 
-当前阶段面向本机单用户，不包含团队权限、评论采集、数字人、视频延长、局部重绘、定时发布、商品挂载或批量自动发布。
+发布适配器使用非官方 Creator 网页接口，接口及签名可能变化，发布成功不代表平台认可该自动化方式。架构拆分没有修改发布机制。
+
+当前服务仍定位为本机个人工作台，监听回环地址。前后端分离不等于已增加远程登录、多用户权限或公网部署认证。

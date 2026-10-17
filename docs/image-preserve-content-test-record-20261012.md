@@ -34,7 +34,7 @@
 - 更新的流程、接口及兼容文档：[图片工作流](image-workflow-v2.md)。
 - 模拟交互截图：`data/verification/image-preserve-content-edge-{1536,825,597}.png`，使用实际主图与辅助图预览。
 - 已部署页面只读截图及检查：`data/verification/preserve-content-live-20261012/`。
-- 可重复执行的只读检查：`web/scripts/verify-preserve-content-readonly.mjs`；它阻止所有项目写请求，验证项目数据未变。
+- 可重复执行的只读检查：`frontend/scripts/verify-preserve-content-readonly.mjs`；它阻止所有项目写请求，验证项目数据未变。
 
 ## 真实图片验收边界
 
