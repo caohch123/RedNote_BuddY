@@ -1,5 +1,7 @@
 # RedNote_BuddY · 小红书内容工作台
 
+简体中文 | [English](README.en.md)
+
 项目采用前后端分离结构：React 前端与 Go API 各自构建、启动和更新，通过 HTTP API 通信。采集、仿写、图片和视频工作流、素材库、发布管理及原有数据均保留。
 
 仓库：[caohch123/RedNote_BuddY](https://github.com/caohch123/RedNote_BuddY)
