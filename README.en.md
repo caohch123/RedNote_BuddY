@@ -164,6 +164,22 @@ By default, UI regression tests use an isolated development server and mocked AP
 - Model API keys, collection cookies, and creator-platform sessions are managed by the backend. Sensitive configuration is protected with DPAPI on Windows. Frontend environment variables are visible to the browser and must not contain API keys.
 - `data/` is not included in the installation package or Git backups. Back it up separately before updates or migration.
 
+## Suggested Extensions
+
+Suggested order: reliability and data protection, followed by creative efficiency, then deployment options. These are proposed directions; scope and scheduling can follow actual needs.
+
+| Stage | Area | Suggested work |
+| --- | --- | --- |
+| Near term | Publishing diagnostics and status verification | Capture error codes and sanitized logs for validation, upload, submission, and result confirmation. Provide diagnostic exports and distinguish upload failures from publication outcomes that still require verification. |
+| Near term | Task recovery and cost controls | Strengthen concurrency limits, resumability, and duplicate-submission checks in the existing task system. Add generation budget limits and verify uncertain paid or publishing outcomes before deciding whether to retry. |
+| Near term | Backup, recovery, and upgrades | Combine consistent SQLite snapshots with media manifests and file checksums. Add one-click backups, restore validation, and pre-upgrade rollback points. Require fresh sign-in and key configuration when moving to another machine. |
+| Medium term | Creative templates and model adapters | Reuse text, image, and video prompt and parameter templates. Maintain model capability descriptions, parameter validation, and adapter tests; display usage estimates and limits before generation. |
+| Medium term | Media deduplication and search | Identify duplicate media by content hash. Add tags, full-text search, and reference tracking, and show affected projects before cleanup to reduce duplicate storage and accidental deletion. |
+| Medium term | API contracts and continuous integration | Describe interfaces with OpenAPI, generate TypeScript types or clients, and automatically run frontend/backend tests, API compatibility checks, and independent builds on pushes and pull requests. |
+| Long term, as needed | Cross-platform and team deployment | Address Windows-specific paths, credential protection, and local dependencies before supporting other systems. A team edition would also need authentication, roles, workspace isolation, and auditing; evaluate database and object storage options against actual concurrency needs. |
+
+Implementation references: [SQLite online backups](https://www.sqlite.org/backup.html), [OpenAPI Specification](https://spec.openapis.org/oas/latest.html), and [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions).
+
 ## Further Documentation
 
 Some of the linked documents are in Chinese:
