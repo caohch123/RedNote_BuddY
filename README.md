@@ -1,8 +1,22 @@
-# Collect_and_imitate · 小红书内容工作台
+# RedNote_BuddY · 小红书内容工作台
 
 项目采用前后端分离结构：React 前端与 Go API 各自构建、启动和更新，通过 HTTP API 通信。采集、仿写、图片和视频工作流、素材库、发布管理及原有数据均保留。
 
-仓库：[caohch123/Collect_and_imitate](https://github.com/caohch123/Collect_and_imitate)
+仓库：[caohch123/RedNote_BuddY](https://github.com/caohch123/RedNote_BuddY)
+
+## 界面演示
+
+### 采集库
+
+采集小红书笔记，查看封面、作者及互动数据，并将内容加入仿写库。
+
+![小红书笔记采集与管理](docs/images/collections.png)
+
+### 仿写库与发布素材
+
+管理创作项目与文案版本，在发布素材中预览确认后的文案并组织图片、视频。
+
+![仿写库与发布文案预览](docs/images/rewrite-publishing.png)
 
 ## 功能
 
@@ -54,8 +68,8 @@ xhs-workbench/
 
 ```powershell
 # 获取源码
-git clone https://github.com/caohch123/Collect_and_imitate.git
-cd Collect_and_imitate
+git clone https://github.com/caohch123/RedNote_BuddY.git
+cd RedNote_BuddY
 
 # 首次安装和构建
 .\scripts\setup.ps1
