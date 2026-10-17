@@ -1,0 +1,9 @@
+.copy-editor-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.copy-ai-generate.ant-btn { background-image: linear-gradient(110deg, #3d718d, #76508d); }
+.copy-ai-generate.ant-btn:not(:disabled):hover { background-image: linear-gradient(110deg, #4b83a1, #885fa0); }
+.copy-model-picker { display: flex; flex:0 1 348px; align-items: center; gap: 8px; margin-left: auto; min-width: 0; max-width:100%; }
+.copy-model-picker .ant-select { flex:1 1 170px; width:170px; min-width:0; max-width:100%; }
+.publication-copy-preview { margin-bottom:16px; }
+.publication-copy-body { max-height:240px; overflow:auto; overflow-wrap:anywhere; }
+.publication-material-actions { display:flex; justify-content:flex-end; padding-top:16px; }
+@media (max-width: 900px) { .copy-model-picker { margin-left: 0; } }

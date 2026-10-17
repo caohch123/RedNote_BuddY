@@ -1,0 +1,14 @@
+{
+  "name": "XHS-Downloader",
+  "version": "2.8",
+  "repository": "https://github.com/JoeanAmier/XHS-Downloader",
+  "commit": "47840a1bee8438324ff10753c4291148c46071c8",
+  "archive_url": "https://codeload.github.com/JoeanAmier/XHS-Downloader/zip/47840a1bee8438324ff10753c4291148c46071c8",
+  "archive_sha256": "73f985e884a187ea4f07c01e505cdb8d634d90a6d5e0f6e8d835f816283c6997",
+  "source_directory": "vendor/XHS-Downloader-47840a1bee8438324ff10753c4291148c46071c8",
+  "python": ">=3.12",
+  "uv_version": "0.12.23",
+  "dependencies": "uv.lock (upstream frozen transitive versions and hashes)",
+  "license": "GPL-3.0",
+  "license_file": "LICENSE"
+}

@@ -1,0 +1,49 @@
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
+body { font-size: 14px; color: #25314c; background: #f7f8fc; }
+button, input, textarea { font-family: inherit; }
+button { cursor: pointer; }
+a { color: #2563eb; }
+.app-shell { position: relative; height: 100vh; height: 100dvh; overflow: hidden; }
+.app-shell > .ant-layout, .app-shell .ant-layout { min-width: 0; min-height: 0; }
+.sidebar { border-right: 1px solid #e9edf4; position: sticky !important; top: 0; height: 100vh; }
+.sidebar .ant-layout-sider-children { display: flex; flex-direction: column; }
+.brand { display: flex; align-items: center; gap: 12px; padding: 30px 20px 34px; overflow: hidden; white-space: nowrap; }
+.brand img { height: 40px; width: 40px; border-radius: 12px; object-fit: cover; flex-shrink: 0; }
+.brand strong { display: block; font-size: 17px; letter-spacing: .6px; }
+.brand small { display: block; font-size: 9px; letter-spacing: 1.3px; color: #8a94a9; margin-top: 4px; }
+.sidebar .ant-menu { border-inline-end: none !important; padding: 0 9px; }
+.sidebar .ant-menu-item { height: 46px; line-height: 46px; font-size: 15px; margin-bottom: 9px; }
+.sidebar .ant-menu-item .anticon { font-size: 19px; }
+.sidebar-bottom { margin-top: auto; padding-bottom: 24px; }
+.workspace-label { margin: 0 26px 17px; font-size: 12px; color: #8792a7; white-space: nowrap; overflow: hidden; }
+.online-dot { display: inline-block; width: 6px; height: 6px; margin-right: 8px; background: #48b791; border-radius: 50%; }
+.sidebar-version { font-size: 11px; margin-left: 26px; white-space: nowrap; }
+.sidebar-toggle { padding: 0 14px; margin: 4px 0 12px; }
+.sidebar-toggle .ant-btn { justify-content: flex-start; color: #66738b; }
+.sidebar-toggle .anticon { font-size: 18px; }
+.ant-layout-sider-collapsed .sidebar-toggle .ant-btn { justify-content: center; padding-inline: 0; }
+.sidebar-scrim { display: none; }
+.ant-layout-sider-collapsed .brand { padding: 28px 14px 34px; }
+.ant-layout-sider-collapsed .brand div, .ant-layout-sider-collapsed .workspace-label, .ant-layout-sider-collapsed .sidebar-version { display: none; }
+.topbar { position:relative; container-type:inline-size; background:#fff !important; border-bottom:1px solid #e9edf4; display:grid; grid-template-columns:minmax(0,1fr) max-content minmax(max-content,1fr); align-items:center; height:auto; min-height:68px; padding:12px 32px; line-height:normal; gap:16px; }
+.topbar-actions { display:flex; align-items:center; gap:clamp(6px,1.4cqw,12px); justify-self:end; min-width:0; }
+.topbar-actions .ant-btn { font-size:clamp(11px,1.8cqw,14px); padding-inline:clamp(8px,1.4cqw,15px); }
+.topbar-brand { position:relative; justify-self:center; min-width:0; color:transparent; -webkit-text-fill-color:transparent; font-family:"Arial Black",Arial,sans-serif; font-size:clamp(20px,4.3cqw,34px); font-weight:1000; letter-spacing:-.065em; line-height:1; white-space:nowrap; pointer-events:none; }
+.topbar-brand > span { color: transparent; -webkit-text-fill-color: transparent; background-image: linear-gradient(132deg, transparent 40%, #b05f9e 44%, #b74b92 47%, #8750a3 51%, transparent 56%), linear-gradient(112deg, #d20d46 4%, #c51058 20%, #8f267d 36%, #4c3a87 48%, #375b8c 60%, #345a72 77%); -webkit-background-clip: text; background-clip: text; -webkit-text-stroke: .25px #30223f; filter: drop-shadow(0 0 1px #8e174b) drop-shadow(0 0 3px #62468745); }
+.breadcrumb { color:#8993a5; font-size:clamp(11px,1.6cqw,13px); display:flex; align-items:center; gap:clamp(6px,1.4cqw,15px); min-width:0; overflow:hidden; white-space:nowrap; }
+.breadcrumb .current-workspace, .breadcrumb strong { overflow:hidden; text-overflow:ellipsis; }
+.breadcrumb span { color: #c5ccda; }
+.breadcrumb strong { color: #48536a; font-weight: 500; }
+.current-workspace { color: #34425e !important; font-weight: 600; white-space: nowrap; }
+.workspace-indicator { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.workspace-indicator.xiaohongshu { background: #e85365; }
+.workspace-switch { border-color: #cddcf6; color: #2563eb; background: #f7faff; }
+@media (max-width: 850px) {
+  .topbar { padding: 12px 16px; gap: 12px; }
+  .breadcrumb { gap: 7px; }
+}
+/* Keep page modules edge-to-edge; internal component spacing stays local. */
+.main-content { padding: 0; min-width: 0; overflow-y: auto; scrollbar-width: none; background: #fff; }
+.main-content::-webkit-scrollbar { display: none; }
+.main-content.main-content-rewrites { padding: 0; background: #fff; }

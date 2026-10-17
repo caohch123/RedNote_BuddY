@@ -1,0 +1,9 @@
+PyExecJS==1.5.1
+requests==2.34.2
+curl_cffi==0.15.0
+loguru==0.7.3
+python-dotenv==1.2.4
+opencv-python==5.0.0.93
+numpy==2.5.3
+qrcode==8.2
+pypng==0.20220715.0

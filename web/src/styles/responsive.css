@@ -1,0 +1,38 @@
+@media (max-width: 900px) {
+  .topbar { padding: 12px 16px; }
+  .rewrite-layout { grid-template-columns: 1fr; }
+  .rewrite-resizer { display: none; }
+  .rewrite-list { position: static; max-height: 180px; }
+  .main-content-rewrites .rewrite-list { border-right: 0; border-bottom: 1px solid #e9edf4; }
+  .provider-grid, .scene-layout { grid-template-columns: 1fr; }
+  .scene-preview video, .scene-empty { height: 250px; }
+  .publication-overview { gap: 10px; }
+  .overview-card { padding: 15px; }
+}
+@media (max-width: 600px) {
+  .sidebar:not(.ant-layout-sider-collapsed) { position: absolute !important; inset: 0 auto 0 0; z-index: 20; box-shadow: 4px 0 16px #25314c1a; }
+  .sidebar:not(.ant-layout-sider-collapsed) ~ .ant-layout { margin-left: 68px; }
+  .sidebar-scrim { display: block; position: absolute; inset: 0 0 0 224px; z-index: 19; border: 0; padding: 0; background: #25314c40; }
+  .xhs-account-panel, .publish-preview-account { flex-direction: column; align-items: flex-start; }
+  .publication-overview, .metrics-grid, .stage-grid, .media-grid, .publication-media, .renders-grid { grid-template-columns: 1fr 1fr; }
+  .breadcrumb { display: none; }
+  .topbar { grid-template-columns:minmax(0,1fr) auto; padding:12px 16px; }
+  .topbar-brand { justify-self:start; font-size:clamp(20px,5.2cqw,28px); }
+  .topbar-actions { gap: 8px; }
+  .topbar .ant-btn { padding-inline: 10px; }
+  .toolbar { padding: 14px 12px; gap: 12px; }
+  .toolbar > .ant-space, .toolbar .ant-space-item { max-width: 100%; }
+  .workspace-management-row { align-items: flex-start; flex-wrap: wrap; }
+  .settings-footer { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .options-grid, .media-select-grid { grid-template-columns: 1fr; }
+  .rewrite-main { padding: 16px; }
+  .segment-row { flex-wrap: wrap; }
+  .segment-row > input { width: 100%; }
+  .scene-voices > div { flex-direction: column; align-items: flex-start; }
+  .row-between { flex-wrap: wrap; }
+}
+@media (max-width:440px) {
+  .topbar { grid-template-columns:minmax(0,1fr); gap:12px; }
+  .topbar-brand, .topbar-actions { justify-self:center; }
+}
+.inactive-workspace-portal { display: none !important; }

@@ -1,0 +1,40 @@
+{
+  "collector_url": "http://127.0.0.1:5556",
+  "cookie": "",
+  "providers": {
+    "text": {
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "model": "qwen-plus",
+      "api_key": ""
+    },
+    "vision": {
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "model": "qwen3-vl-plus",
+      "api_key": ""
+    },
+    "ocr": {
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "model": "qwen3.5-ocr",
+      "api_key": ""
+    },
+    "asr": {
+      "base_url": "wss://dashscope.aliyuncs.com/api-ws/v1/inference",
+      "model": "paraformer-realtime-v2",
+      "api_key": ""
+    },
+    "image": {
+      "base_url": "",
+      "model": "",
+      "api_key": ""
+    },
+    "video": {
+      "base_url": "https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com/api/v1",
+      "model": "wan3.0-video",
+      "api_key": ""
+    }
+  },
+  "ffmpeg_path": "ffmpeg",
+  "ffprobe_path": "ffprobe",
+  "node_path": "node",
+  "edge_path": ""
+}

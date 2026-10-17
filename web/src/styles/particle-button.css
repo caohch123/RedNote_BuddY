@@ -1,0 +1,81 @@
+.ant-btn.ai-generation-button {
+  position: relative;
+  padding-inline: 12px;
+  border: 0;
+  border-radius: 8px;
+  background: #7130ff !important;
+  color: #fff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 8px #7130ff24;
+  transition: box-shadow .2s, background-color .2s;
+}
+.ant-btn.ai-generation-button:not(:disabled):hover {
+  background: #8044ff !important;
+  box-shadow: 0 3px 12px #7130ff38;
+}
+.ant-btn.ai-generation-button:focus-visible { outline: 2px solid #a388ff; outline-offset: 3px; }
+.ant-btn.ai-generation-button:disabled:not(.ant-btn-loading):not([data-accelerating="true"]) { background: #eee9f8 !important; color: #a59bb9 !important; box-shadow: none; }
+.generation-sparkle-icon { display: block; flex-shrink: 0; }
+.ant-btn.particle-generate-button { --particle-cycle: 4.2s; isolation: isolate; overflow: hidden; }
+.particle-generate-button .ant-btn-icon, .particle-generate-label { position: relative; z-index: 1; }
+.particle-generate-field { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; pointer-events: none; }
+.particle-generate-stream {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: particle-generate-drift calc(var(--particle-cycle) * var(--particle-speed)) var(--particle-delay) linear infinite;
+}
+.particle-generate-stream::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: var(--particle-y);
+  width: var(--particle-size);
+  height: var(--particle-size);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 5px #ffffffb3;
+}
+.particle-generate-stream.is-star::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 0;
+  clip-path: polygon(50% 0, 65% 35%, 100% 50%, 65% 65%, 50% 100%, 35% 65%, 0 50%, 35% 35%);
+}
+.particle-generate-stream::after {
+  content: '';
+  position: absolute;
+  left: -20px;
+  top: calc(var(--particle-y) + 1px);
+  width: 20px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ffffffb3);
+  opacity: 0;
+}
+.particle-generate-button:not(:disabled):active,
+.particle-generate-button[data-accelerating="true"] { --particle-cycle: .52s; }
+.particle-generate-button[data-accelerating="true"] { cursor: wait; }
+.particle-generate-button:not(:disabled):active .particle-generate-stream,
+.particle-generate-button[data-accelerating="true"] .particle-generate-stream { animation-name: particle-generate-rush; animation-timing-function: cubic-bezier(.35, 0, 1, .8); }
+.particle-generate-button:not(:disabled):active .particle-generate-stream::after,
+.particle-generate-button[data-accelerating="true"] .particle-generate-stream::after { opacity: .75; }
+.particle-generate-button:disabled:not([data-accelerating="true"]) .particle-generate-field { opacity: .25; }
+.particle-generate-button:disabled:not([data-accelerating="true"]) .particle-generate-stream,
+.particle-generate-button[data-paused="true"] .particle-generate-stream { animation-play-state: paused; }
+@keyframes particle-generate-drift {
+  0% { transform: translate3d(-10%, 0, 0); opacity: 0; }
+  15% { opacity: .65; }
+  80% { opacity: .45; }
+  100% { transform: translate3d(110%, -3px, 0); opacity: 0; }
+}
+@keyframes particle-generate-rush {
+  0% { transform: translate3d(-12%, 0, 0); opacity: 0; }
+  12% { opacity: .85; }
+  75% { opacity: .7; }
+  100% { transform: translate3d(112%, -5px, 0); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ant-btn.ai-generation-button { transition: none; }
+  .particle-generate-field { display: none; }
+  .particle-generate-stream { animation: none; }
+}

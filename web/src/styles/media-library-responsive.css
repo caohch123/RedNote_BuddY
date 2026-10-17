@@ -1,0 +1,12 @@
+@media (max-width: 600px) {
+  .picture-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .picture-choice-preview img { height: 145px; }
+  .library-media-grid, .publication-media-grid { columns: 2; column-gap: 12px; }
+  .library-media-card, .media-selection-card { margin-bottom: 12px; border-radius: 12px; }
+  .library-media-card .library-media-menu-trigger { top: 8px; right: 8px; }
+  .publication-media-drag-handle { top: 8px; right: 8px; }
+  .library-toolbar .ant-select { flex: 1 1 140px; min-width: 0; }
+}
+@media (max-width: 420px) {
+  .library-media-grid, .publication-media-grid { columns: 1; }
+}

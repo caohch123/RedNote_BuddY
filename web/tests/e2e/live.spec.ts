@@ -1,0 +1,66 @@
+import { expect, test } from '@playwright/test';
+
+test('live Gin serves genuine empty pages, settings, and dependency report', async ({ page }) => {
+  test.skip(!process.env.XHS_LIVE_URL || !!process.env.XHS_FIXTURE, 'Set XHS_LIVE_URL for read-only production smoke');
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  await expect(page.getByRole('textbox', { name: /小红书链接/ })).toBeVisible();
+  await page.screenshot({ path: 'qa/live-collections.png', fullPage: true });
+  await page.getByRole('menuitem', { name: /仿写库/ }).click();
+  await expect(page.getByPlaceholder('搜索仿写项目')).toBeVisible();
+  await page.getByRole('menuitem', { name: /发布管理/ }).click();
+  await expect(page.getByPlaceholder('搜索发布标题或正文')).toBeVisible();
+  await page.getByRole('menuitem', { name: '设置' }).click();
+  await page.getByRole('tab', { name: '共用 AI 服务' }).click();
+  await expect(page.getByRole('textbox', { name: '图片生成与仿写 模型' })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: '图片生成与仿写 API Key' })).toBeVisible();
+  await page.screenshot({ path: 'qa/live-settings.png', fullPage: true });
+  await page.getByRole('tab', { name: '本地依赖' }).click();
+  await expect(page.getByRole('cell', { name: '本地数据库', exact: true })).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'FFmpeg', exact: true })).toBeVisible();
+  expect(await page.locator('.resource-error').count()).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('isolated real Gin fixture completes manual version, ZIP, and published record', async ({ page }) => {
+  test.setTimeout(120_000);
+  test.skip(!process.env.XHS_FIXTURE, 'Set XHS_FIXTURE=1 with a separate temporary Gin database');
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
+  await page.goto('/');
+  const created = page.waitForResponse(r => new URL(r.url()).pathname.endsWith('/api/v1/rewrites') && r.request().method() === 'POST');
+  await page.getByRole('button', { name: '加入仿写库' }).first().click();
+  const rewrite = await (await created).json();
+  await expect(page.getByRole('textbox', { name: '仿写标题' })).toBeVisible();
+  expect(rewrite.versions).toHaveLength(1);
+  await page.getByRole('button', { name: 'AI 生成新版本' }).click();
+  await expect.poll(async () => (await (await page.request.get('/api/v1/jobs')).json()).items
+    .find((j: any) => j.entity_id === rewrite.id && j.kind === 'rewrite')?.state, { timeout: 15000 }).toBe('waiting_config');
+  await expect(page.getByRole('button', { name: 'AI 生成新版本' })).toBeEnabled();
+  await expect(page.getByText('配置完成后，可在后台任务中重试；也可继续手动编辑与保存。')).toBeVisible();
+  await page.getByRole('textbox', { name: '仿写标题' }).fill('真实 Gin 浏览器测试发布稿');
+  await page.getByRole('textbox', { name: '仿写正文' }).fill('仅在隔离临时数据库中的测试正文。');
+  await expect(page.getByRole('button', { name: '确认此版本' })).toBeEnabled();
+  await page.getByRole('button', { name: '确认此版本' }).click();
+  await page.getByRole('tab', { name: /发布素材/ }).click();
+  await expect(page.getByRole('button', { name: '创建发布稿' })).toBeEnabled();
+  await page.getByRole('button', { name: '创建发布稿' }).click();
+  const publicationResponse = page.waitForResponse(r => new URL(r.url()).pathname.endsWith('/publications') && r.request().method() === 'POST');
+  await page.getByRole('dialog').getByRole('button', { name: '创建发布稿' }).click();
+  const publication = await (await publicationResponse).json();
+  await expect(page.getByRole('heading', { name: '真实 Gin 浏览器测试发布稿' })).toBeVisible();
+  const download = page.waitForEvent('download');
+  await page.getByRole('dialog').getByRole('button', { name: '导出发布包' }).click();
+  expect((await download).suggestedFilename()).toMatch(/\.zip$/);
+  await expect(page.getByRole('dialog').getByText('已导出', { exact: true })).toBeVisible();
+  const exported = await (await page.request.get(`/api/v1/publications/${publication.id}`)).json();
+  expect(exported.status).toBe('exported'); expect(exported.published_at || '').toBe('');
+  await page.getByRole('dialog').getByRole('button', { name: '记录已发布' }).click();
+  const record = page.getByRole('dialog', { name: '记录发布结果' });
+  await record.getByRole('textbox', { name: '已发布作品链接' }).fill('https://www.xiaohongshu.com/explore/507f1f77bcf86cd799439011');
+  await record.getByRole('button', { name: '保存发布记录' }).click();
+  await expect(page.getByRole('dialog').getByText('已发布', { exact: true })).toBeVisible();
+  await page.screenshot({ path: 'qa/live-publication.png', fullPage: true });
+  expect(errors).toEqual([]);
+  const session = await (await page.request.get('/api/v1/session')).json();
+  await page.request.post('/_test/finish', { headers: { 'X-CSRF-Token': session.csrf_token } });
+});

@@ -1,0 +1,55 @@
+.publication-overview { display: grid; grid-template-columns: repeat(4, 1fr); gap: 17px; }
+.publication-page > .xhs-account-panel { border-radius: 0; }
+.publication-page .overview-card { border-radius: 10px 10px 0 0; }
+.publication-page > .publication-table-panel { border-radius: 0 0 11px 11px; }
+.xhs-account-panel { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 18px 22px; border: 1px solid #e4e8f0; border-radius: 10px; background: #fff; }
+.xhs-account-info { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.xhs-account-info strong, .publish-preview-account strong { font-size: 14px; color: #40506f; }
+.xhs-qr-box { min-height: 290px; display: flex; justify-content: center; align-items: center; padding: 20px; }
+.xhs-qr-box img { width: 250px; height: 250px; object-fit: contain; }
+.xhs-qr-box img.expired-qr { opacity: .3; filter: grayscale(1); }
+.publish-preview-account { display: flex; align-items: center; justify-content: space-between; border: 1px solid #dce7fb; background: #f5f8ff; border-radius: 8px; padding: 14px; margin-bottom: 20px; }
+.publish-preview-media { margin-top: 12px; }
+.publish-confirm-check { margin-top: 22px; padding: 18px; border-radius: 8px; background: #f5f8ff; }
+.publish-confirm-check .field-hint { margin-top: 10px; }
+.publish-error-text { color: #b94b4b; font-size: 11px; line-height: 1.5; margin-top: 5px; max-width: 170px; overflow-wrap: anywhere; }
+.overview-card { text-align: left; background: #fff; border: 1px solid #e4e8f0; border-radius: 10px; padding: 19px 22px; display: flex; flex-direction: column; gap: 10px; transition: border-color .2s; }
+.overview-card:hover { border-color: #93b3f3; }
+.overview-card.active { background: #f1f6ff; border-color: #6d9ff9; }
+.overview-card span { font-size: 12px; color: #8390a6; }
+.overview-card strong { font-size: 25px; color: #3e506f; font-weight: 600; }
+.provider-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; }
+
+.runtime-dependencies .ant-card-body { padding: 12px; }
+.runtime-table-header, .runtime-table-row { display:grid; grid-template-columns:95px minmax(140px, 1fr) 92px minmax(220px, 1.7fr); align-items:center; gap:12px; padding:12px 8px; }
+.runtime-table-header { background:#f5f7fb; color:#52617a; font-weight:600; border-radius:6px; }
+.runtime-table-row { border-bottom:1px solid #edf0f5; }
+.runtime-table-row:last-child { border-bottom:0; }
+.runtime-name, .runtime-usage, .runtime-status, .runtime-path { min-width:0; }
+.runtime-name { font-size:14px; }
+.runtime-usage { font-size:13px; color:#71809a; line-height:1.6; }
+.runtime-status .ant-tag { margin:0; }
+.runtime-detail { margin-top:4px; font-size:12px; line-height:1.5; color:#8390a6; overflow-wrap:anywhere; }
+@media (max-width:1000px) {
+ .runtime-table-header { display:none; }
+ .runtime-table-row { grid-template-columns:1fr auto; gap:8px 12px; padding:12px 0; }
+ .runtime-name { grid-column:1; grid-row:1; }
+ .runtime-status { grid-column:2; grid-row:1; }
+ .runtime-usage, .runtime-path { grid-column:1 / -1; }
+}
+
+.settings-page { width:100%; max-width:1220px; box-sizing:border-box; padding:16px 24px 24px; gap:16px; }
+@media (max-width:600px) { .settings-page { padding-inline:16px; } }
+.settings-note { font-size: 11px; color: #8995ab; line-height: 1.7; }
+.settings-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 14px 0; background: #fff; }
+.settings-footer > .ant-btn { flex-shrink: 0; }
+.settings-page .ant-card-head-title { font-size: 15px; }
+.workspace-empty { max-width: 720px; margin: 8vh auto; padding: 24px; }
+.workspace-management-list { display: flex; flex-direction: column; gap: 16px; }
+.workspace-management-row { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.workspace-management-row > div { min-width: 0; }
+.delete-consequences { padding-left: 20px; line-height: 1.8; }
+.delete-consequences li + li { margin-top: 8px; }
+.delete-acknowledgement { margin-top: 20px; }
+.historical-provider { grid-column: 1 / -1; }
+.break-word { overflow-wrap: anywhere; }

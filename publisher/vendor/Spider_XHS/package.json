@@ -1,0 +1,9 @@
+{
+  "name": "spider_xhs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "XHS API clients and local PC signing runtime",
+  "dependencies": {
+    "crypto-js": "^4.2.0"
+  }
+}

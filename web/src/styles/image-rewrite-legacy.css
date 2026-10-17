@@ -1,0 +1,23 @@
+/* Status toasts contain no controls and must not block drawer header buttons. */
+.ant-message .ant-message-notice, .ant-message .ant-message-notice * { pointer-events: none; }
+/* Generated images stay inside the rewrite editor at narrow window sizes. */
+.image-rewrite-preview { display: block; width: 100%; max-height: 340px; object-fit: contain; margin-bottom: 12px; border-radius: 8px; }
+.image-rewrite-workspace .ant-card, .image-rewrite-workspace .ant-select { min-width: 0; }
+.image-workflow-steps { display: flex; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.image-workflow-steps li { flex: 1; min-width: 0; padding: 8px 4px; border-radius: 6px; background: #f3f5f9; color: #68778d; text-align: center; font-size: 13px; }
+.image-workflow-steps .is-current { color: #2460ec; background: #edf3ff; font-weight: 600; }
+.image-scheme-toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.image-scheme-toolbar .ant-select { flex: 1 1 180px; }
+.image-reference-strip { display: flex; flex-wrap: wrap; gap: 12px; }
+.image-reference-strip > div { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #68778d; }
+.image-reference-strip .ant-image { width: 90px; height: 100px; }
+.image-reference-strip .ant-image-img { height: 100px; object-fit: contain; background: #f5f7fb; border-radius: 6px; }
+.image-prompt-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0; }
+.image-request-snapshot { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.image-snapshot-prompt { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 300px; overflow-y: auto; }
+.image-result-card > .ant-card-body > .ant-collapse, .image-result-history { margin-top: 12px; }
+.image-result-card > .ant-card-body > .ant-image { display: block; }
+.picture-selection-strip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.picture-selection-strip:empty { display: none; }
+.picture-selection-strip button { display: flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 10px 6px 6px; border: 1px solid #dce2ed; border-radius: 8px; background: #fff; color: inherit; cursor: pointer; }
+.picture-selection-strip img, .scheme-style-reference img { width: 54px; height: 64px; object-fit: contain; border-radius: 4px; background: #f5f7fb; }
