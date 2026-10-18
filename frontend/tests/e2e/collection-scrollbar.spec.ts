@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -8,6 +9,7 @@ const allColumns = ['title', 'cover', 'author', 'likes', 'collects', 'comments',
 async function fixture(page: Page, wide = false) {
   if (wide) await page.addInitScript(columns => localStorage.setItem('workbench.xiaohongshu.columns', JSON.stringify(columns)), allColumns);
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const url = new URL(route.request().url()); const pathname = url.pathname.replace('/api/v1', '');
     const json = (value: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (pathname === '/workspaces') return json({ items: [{ id: 'xiaohongshu', platform: 'xiaohongshu' }], total: 1 });

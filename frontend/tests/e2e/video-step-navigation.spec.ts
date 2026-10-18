@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 for (const initialState of ['draft', 'queued', 'running']) {
@@ -12,6 +13,7 @@ for (const initialState of ['draft', 'queued', 'running']) {
     const writes: string[] = []; const errors: string[] = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.route('**/api/v1/**', route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
       const request = route.request(); const path = new URL(request.url()).pathname.replace('/api/v1', '');
       const json = (value: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
       if (path === '/session') return json({ csrf_token: 'step-fixture' });

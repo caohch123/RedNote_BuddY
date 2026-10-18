@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 const featureKeys = ['subject', 'action', 'scene', 'composition', 'palette', 'lighting', 'texture', 'text'];
@@ -26,6 +27,7 @@ async function fixture(page: Page, options: { empty?: boolean; failInitializatio
     }
   });
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const url = new URL(request.url()); const path = url.pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, json: value });
     if (request.method() !== 'GET') {

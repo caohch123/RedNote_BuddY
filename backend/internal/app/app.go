@@ -34,6 +34,13 @@ type App struct {
 	closing                bool
 	jobRuns                map[string]*jobRun
 	frontendOrigins        map[string]bool
+	workerOnce             sync.Once
+	sharedSettings         func() (domain.Settings, error)
+	canRun                 func() bool
+	usageGuard             func(context.Context, string) (func(), error)
+	priceStore             *store.Store
+	usageReader            func(domain.UsageFilter) ([]domain.UsageRecord, error)
+	billingAccounts        []Account
 }
 
 func ID() string {
@@ -62,6 +69,11 @@ func New(root, data, addr string) (*App, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	a := &App{Store: st, Root: root, Data: data, Addr: addr, CSRF: ID(), ctx: ctx, cancel: cancel}
 	a.xhs = newXHSState(root, a.nodeToolPath)
+	if e = a.initBilling(); e != nil {
+		st.Close()
+		cancel()
+		return nil, e
+	}
 	var saved domain.Settings
 	if errors.Is(st.Get("settings", "main", &saved), store.ErrNotFound) {
 		if e = st.Put("settings", "main", a.defaults()); e != nil {
@@ -178,6 +190,14 @@ func (a *App) settings() (domain.Settings, error) {
 		p.Configured = p.APIKey != ""
 		s.Providers[k] = p
 	}
+	if a.sharedSettings != nil {
+		shared, err := a.sharedSettings()
+		if err != nil {
+			return s, err
+		}
+		shared.Cookie = s.Cookie
+		s = shared
+	}
 	return s, nil
 }
 func (a *App) saveSettings(s domain.Settings) error {
@@ -292,6 +312,7 @@ func (a *App) Router() *gin.Engine {
 	a.routesPublications(g)
 	a.routesXHS(g)
 	a.routesSettings(g)
+	a.routesBilling(g)
 	g.GET("/jobs", func(c *gin.Context) {
 		jobs, err := readList[domain.Job](a, "jobs")
 		if err != nil {
@@ -302,8 +323,7 @@ func (a *App) Router() *gin.Engine {
 		items := []domain.Job{}
 		for _, j := range jobs {
 			if a.workspaceAllows(c, "jobs", j.ID, true) {
-				j.Payload = nil
-				items = append(items, j)
+				items = append(items, a.publicJob(j))
 			}
 		}
 		c.JSON(200, gin.H{"items": items, "total": len(items)})
@@ -311,8 +331,7 @@ func (a *App) Router() *gin.Engine {
 	g.GET("/jobs/:id", func(c *gin.Context) {
 		var j domain.Job
 		if a.get(c, "jobs", c.Param("id"), &j) {
-			j.Payload = nil
-			c.JSON(200, j)
+			c.JSON(200, a.publicJob(j))
 		}
 	})
 	g.DELETE("/jobs/completed", a.clearCompletedJobs)

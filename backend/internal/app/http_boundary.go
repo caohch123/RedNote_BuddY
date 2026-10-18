@@ -29,6 +29,10 @@ func (a *App) ConfigureFrontendOrigins(origins []string) error {
 }
 
 func (a *App) httpBoundary() gin.HandlerFunc {
+	return a.boundary(true)
+}
+
+func (a *App) boundary(checkCSRF bool) gin.HandlerFunc {
 	_, port, _ := net.SplitHostPort(a.Addr)
 	return func(c *gin.Context) {
 		if c.Request.Host != a.Addr && c.Request.Host != "localhost:"+port {
@@ -42,6 +46,7 @@ func (a *App) httpBoundary() gin.HandlerFunc {
 				return
 			}
 			c.Header("Access-Control-Allow-Origin", origin)
+			c.Header("Access-Control-Allow-Credentials", "true")
 			c.Header("Vary", "Origin")
 			c.Header("Access-Control-Allow-Methods", "GET, HEAD, POST, PATCH, PUT, DELETE, OPTIONS")
 			c.Header("Access-Control-Allow-Headers", "Content-Type, X-CSRF-Token, Range")
@@ -51,7 +56,7 @@ func (a *App) httpBoundary() gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusNoContent)
 			return
 		}
-		if strings.HasPrefix(c.Request.URL.Path, "/api/") && c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
+		if checkCSRF && strings.HasPrefix(c.Request.URL.Path, "/api/") && c.Request.Method != http.MethodGet && c.Request.Method != http.MethodHead {
 			if c.GetHeader("X-CSRF-Token") != a.CSRF {
 				fail(c, 403, "请刷新页面后重试")
 				return

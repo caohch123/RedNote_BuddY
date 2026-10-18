@@ -37,8 +37,17 @@ func main() {
 		log.Fatal(e)
 	}
 	// Start background jobs only after application recovery has completed.
-	a.StartWorkers()
-	srv := &http.Server{Addr: *addr, Handler: a.Router(), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 90 * time.Second}
+	portal, e := app.NewPortal(a)
+	if e != nil {
+		a.Close()
+		log.Fatal("账号服务初始化失败: ", e)
+	}
+	if e = portal.StartWorkers(); e != nil {
+		portal.Close()
+		a.Close()
+		log.Fatal("用户工作区恢复失败: ", e)
+	}
+	srv := &http.Server{Addr: *addr, Handler: portal.Router(), ReadHeaderTimeout: 10 * time.Second, IdleTimeout: 90 * time.Second}
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	go func() {
@@ -52,5 +61,6 @@ func main() {
 	if e = srv.ListenAndServe(); e != nil && e != http.ErrServerClosed {
 		log.Printf("server: %v", e)
 	}
+	portal.Close()
 	a.Close()
 }

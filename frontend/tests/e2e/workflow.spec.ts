@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 async function fixtures(page: Page) {
@@ -8,6 +9,7 @@ async function fixtures(page: Page) {
   let notes: typeof note[] = []; let rewrites: any[] = []; let publications: any[] = []; let jobs: any[] = [];
   const mutations: { path: string; body: any; csrf: string | undefined }[] = [];
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const req = route.request(); const path = new URL(req.url()).pathname.replace('/api/v1', ''); const method = req.method();
     const body = req.postDataJSON(); const csrf = req.headers()['x-csrf-token'];
     if (method !== 'GET' || path.endsWith('/export')) mutations.push({ path, body, csrf });

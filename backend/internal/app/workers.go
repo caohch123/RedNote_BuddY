@@ -16,6 +16,9 @@ import (
 )
 
 func (a *App) StartWorkers() {
+	a.workerOnce.Do(a.startWorkers)
+}
+func (a *App) startWorkers() {
 	jobs, err := readList[domain.Job](a, "jobs")
 	if err != nil {
 		log.Printf("load jobs for worker recovery: %v", err)
@@ -58,6 +61,14 @@ func (a *App) worker(kinds []string) {
 		case <-a.ctx.Done():
 			return
 		default:
+		}
+		if a.canRun != nil && !a.canRun() {
+			select {
+			case <-a.ctx.Done():
+				return
+			case <-time.After(400 * time.Millisecond):
+			}
+			continue
 		}
 		var j domain.Job
 		claimed := false
@@ -112,6 +123,9 @@ func (a *App) runJob(j *domain.Job) {
 	a.mu.Unlock()
 	defer func() { a.mu.Lock(); delete(a.jobRuns, j.ID); a.mu.Unlock(); close(run.done) }()
 	var e error
+	if a.canRun != nil && !a.canRun() {
+		cancel()
+	}
 	if j.Kind == "publish" {
 		var p domain.Publication
 		if err := a.Store.Get("publications", j.EntityID, &p); err != nil {
@@ -140,7 +154,7 @@ func (a *App) runJob(j *domain.Job) {
 					s.Providers[k] = p
 				}
 			}
-			client := providers.New(s)
+			client := a.meteredClient(s, j)
 			switch j.Kind {
 			case "collect":
 				e = a.collectJob(ctx, j, client, s)

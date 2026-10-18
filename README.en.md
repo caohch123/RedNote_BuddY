@@ -28,6 +28,10 @@ Manage creative projects and text versions, preview confirmed copy, and organize
 - **Media management**: Organize images and videos by project, select publication materials, and adjust their order.
 - **Publication management**: Validate copy and media, create publication draft snapshots, export drafts, and publish after signing in with your own QR code.
 - **Background tasks**: Run tasks in the background, inspect their status, retry failures, and clear task history.
+- **User and administrator portals**: Separate login realms, isolated member data, centralized model configuration, request limits, and audit records. Two random-password accounts are created on first startup.
+- **Billing panel**: Track reported Token usage, visualize it by time, model, and capability, inspect input/output and cached/reasoning details, configure rates for cost estimates, and export CSV records. Tracking starts when the feature is enabled; earlier usage is not reconstructed.
+
+See [accounts and administration](docs/accounts-and-admin.en.md) for initial credentials, permissions, data ownership, and backups. Open `/` for the user workspace and `/admin` for administration. Temporary passwords for `user` and `admin` are stored locally in `data/initial-accounts.txt`; both must be changed on first login.
 
 ## Architecture
 
@@ -80,9 +84,9 @@ cd RedNote_BuddY
 .\scripts\start.ps1
 ```
 
-Initial setup requires an internet connection to download dependencies. To select a Python installation, use `setup.ps1 -PythonPath 'C:\Python312\python.exe'`. Add FFmpeg / FFprobe to your system PATH or specify their paths in the workspace settings.
+Initial setup requires an internet connection to download dependencies. To select a Python installation, use `setup.ps1 -PythonPath 'C:\Python312\python.exe'`. Add FFmpeg / FFprobe to your system PATH or specify their paths on the administrator model settings page.
 
-Once the page opens, enter your model endpoint, model name, and API key in Settings. See [config.example.json](config.example.json) for a sample configuration without real credentials.
+Read the random initial passwords from local `data/initial-accounts.txt`, sign in as `admin` at `/admin`, and change the temporary password. Configure shared model endpoints and keys in the administrator console. Sign in as `user` at `/` to use the creative workspace. See [config.example.json](config.example.json) for a sample configuration without real credentials.
 
 Default addresses:
 
@@ -186,6 +190,7 @@ Some of the linked documents are in Chinese:
 
 - [Frontend/backend separation and deployment](docs/frontend-backend.md)
 - [API reference](docs/api.md)
+- [Billing panel and usage accounting](docs/billing.md)
 - [Local dependencies](docs/local-dependencies.md)
 - [Image rewrite workflow](docs/image-workflow-v2.md)
 - [Media library and publication boundaries](docs/media-library-actions-20261012.md)

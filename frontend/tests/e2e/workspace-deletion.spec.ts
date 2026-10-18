@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 const names = { xiaohongshu: '小红书' };
@@ -15,6 +16,7 @@ async function fixtures(page: Page, jobs: any[] = []) {
     return [platform, { notes, rewrites: [rewrite], publications: [publication] }];
   })) as Record<string, any>;
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const url = new URL(request.url()); const path = url.pathname.replace('/api/v1', '');
     const platform = url.searchParams.get('platform'); const method = request.method();
     const body = request.headers()['content-type']?.includes('application/json') ? request.postDataJSON() : undefined;

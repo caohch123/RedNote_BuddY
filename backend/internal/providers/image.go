@@ -163,12 +163,23 @@ func (c *Client) generateImageSize(ctx context.Context, prompt string, images []
 	requestClient.Timeout = 10 * time.Minute
 	requestClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	unknown := fmt.Errorf("图片生成提交结果不明，请核实供应商记录后再制作: %w", ErrSubmissionUnknown)
+	release, err := c.acquireUsage(ctx, "image")
+	if err != nil {
+		return nil, "", err
+	}
+	defer release()
 	resp, err := requestClient.Do(req)
 	if err != nil {
+		c.reportUsage(p, usageContext{capability: "image"}, 0, nil)
 		return nil, "", unknown
 	}
 	defer resp.Body.Close()
 	raw, err := io.ReadAll(io.LimitReader(resp.Body, 32<<20+1))
+	usageStatus := resp.StatusCode
+	if err != nil || len(raw) > 32<<20 {
+		usageStatus = 0
+	}
+	c.reportUsage(p, usageContext{capability: "image"}, usageStatus, raw)
 	if err != nil || len(raw) > 32<<20 {
 		return nil, "", unknown
 	}

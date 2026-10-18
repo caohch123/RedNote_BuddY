@@ -18,14 +18,14 @@ func (a *App) routesVideos(g *gin.RouterGroup) {
 		items := []domain.VideoProject{}
 		for _, v := range videos {
 			if v.Workflow == videoRewriteWorkflow && a.workspaceAllows(c, "videos", v.ID, true) {
-				items = append(items, v)
+				items = append(items, publicVideoProject(v))
 			}
 		}
 		c.JSON(200, gin.H{"items": items, "total": len(items)})
 	})
 	g.GET("/video-projects/:id", func(c *gin.Context) {
 		if v, ok := a.activeVideoRewrite(c); ok {
-			c.JSON(200, v)
+			c.JSON(200, publicVideoProject(v))
 		}
 	})
 	g.POST("/video-projects", func(c *gin.Context) {

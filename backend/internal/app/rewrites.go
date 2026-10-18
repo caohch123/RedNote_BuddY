@@ -210,7 +210,7 @@ func (a *App) routesRewrites(g *gin.RouterGroup) {
 		}
 		for _, v := range projects {
 			if v.RewriteID == r.ID && v.Workflow == videoRewriteWorkflow {
-				videos = append(videos, v)
+				videos = append(videos, publicVideoProject(v))
 			}
 		}
 		sortVideoRewriteProjects(videos, a.assetsByIDs(n.AssetIDs))

@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 
 async function fixture(page: Page) {
@@ -7,6 +8,7 @@ async function fixture(page: Page) {
     localStorage.setItem('workbench.xiaohongshu.columns', JSON.stringify(['title', 'platform', 'cover', 'author', 'likes', 'collects', 'comments', 'tags', 'collected_at', 'status']));
   });
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const url = new URL(route.request().url());
     const path = url.pathname.replace('/api/v1', '');
     const json = (value: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });

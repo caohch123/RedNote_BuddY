@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -20,6 +21,7 @@ async function fixture(page: Page) {
   const library = () => assets.filter(a => a.owner_id !== note.id && !a.library_deleted_at).map(asset => ({ id: asset.id, asset, rewrite_id: rewrite.id, project_title: rewrite.title, origin: asset.id === 'upload' ? 'upload' : asset.id === 'scene' ? 'video_image' : 'image_rewrite', revision: 1, stale: false }));
   const writes: { path: string; body: any }[] = []; let failDelete = false;
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const url = new URL(request.url()); const p = url.pathname.replace('/api/v1', ''); const method = request.method();
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (method !== 'GET') { expect(request.headers()['x-csrf-token']).toBe('library-csrf'); expect(url.searchParams.get('platform')).toBe('xiaohongshu'); writes.push({ path: p, body: request.postDataJSON() }); }

@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 test('项目内素材库独立查询，切换项目和页签隔离预览，兼容旧导航', async ({ page }) => {
@@ -7,6 +8,7 @@ test('项目内素材库独立查询，切换项目和页签隔离预览，兼�
     versions: [{ id: `version-${index}`, number: 1, title, body: '原正文', script: '', topics: [], asset_ids: [], source_snapshot: note }], image_rewrites: [] }));
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jxdoAAAAASUVORK5CYII=', 'base64');
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const url = new URL(request.url()); const path = url.pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (request.method() !== 'GET') { writes.push(path); return json({ error: '禁止写入' }, 403); }

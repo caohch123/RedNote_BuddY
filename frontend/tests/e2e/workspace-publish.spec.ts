@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 const png = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJEkAAAAASUVORK5CYII=';
@@ -10,6 +11,7 @@ async function fixture(page: Page, loggedIn = true, options: { workspaceEmpty?: 
     ffmpeg_path: 'ffmpeg.exe', ffprobe_path: 'ffprobe.exe', node_path: 'node.exe',
     providers: Object.fromEntries(['text', 'ocr', 'asr', 'video'].map(key => [key, { base_url: 'https://example.com/v1', model: `model-${key}`, configured: false }])) };
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const url = new URL(request.url()); const path = url.pathname.replace('/api/v1', ''); const method = request.method(); const platform = url.searchParams.get('platform');
     const body = method !== 'GET' && request.postData() ? request.postDataJSON() : undefined; requests.push({ path, platform, method, body });
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });

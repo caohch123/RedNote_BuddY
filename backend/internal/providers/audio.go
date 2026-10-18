@@ -101,6 +101,13 @@ func (c *Client) Transcribe(ctx context.Context, pcmPath string) ([]domain.Segme
 	if e != nil || info.Size() == 0 || info.Size()%2 != 0 || info.Size() > 115200000 {
 		return nil, errors.New("PCM 应为非空 16kHz 单声道 16 位原始音频，最长 1 小时")
 	}
+	release, e := c.acquireUsage(ctx, "asr")
+	if e != nil {
+		return nil, e
+	}
+	defer release()
+	usageStatus := 0
+	defer func() { c.reportUsage(p, usageContext{capability: "asr"}, usageStatus, []byte(`{}`)) }()
 	conn, e := c.asrConnection(ctx, p)
 	if e != nil {
 		return nil, e
@@ -126,6 +133,7 @@ func (c *Client) Transcribe(ctx context.Context, pcmPath string) ([]domain.Segme
 		return nil, errors.New("转写服务未确认任务启动")
 	}
 	if event.Header.Event == "task-failed" {
+		usageStatus = 400
 		return nil, asrError(event)
 	}
 	if event.Header.Event != "task-started" {
@@ -190,6 +198,7 @@ func (c *Client) Transcribe(ctx context.Context, pcmPath string) ([]domain.Segme
 			}
 			segments = append(segments, domain.Segment{Text: s.Text, Start: s.Begin / 1000, End: end / 1000})
 		case "task-failed":
+			usageStatus = 400
 			return nil, asrError(ev)
 		case "task-finished":
 			select {
@@ -202,6 +211,7 @@ func (c *Client) Transcribe(ctx context.Context, pcmPath string) ([]domain.Segme
 			case <-ctx.Done():
 				return nil, ctx.Err()
 			}
+			usageStatus = 200
 			return segments, nil
 		}
 	}

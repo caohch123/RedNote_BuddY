@@ -190,7 +190,7 @@ func (a *App) routesVideoRewrites(g *gin.RouterGroup) {
 		out := []domain.VideoProject{}
 		for _, v := range all {
 			if v.RewriteID == r.ID && v.Workflow == videoRewriteWorkflow {
-				out = append(out, v)
+				out = append(out, publicVideoProject(v))
 			}
 		}
 		sortVideoRewriteProjects(out, a.assetsByIDs(n.AssetIDs))
@@ -353,7 +353,7 @@ func (a *App) createVideoRewrite(c *gin.Context, rewriteID, versionID, primary s
 	}
 	v := domain.VideoProject{ID: ID(), RewriteID: r.ID, VersionID: versionID, Title: r.Title, Workflow: videoRewriteWorkflow, Revision: 1, Scenes: []domain.Scene{}, Renders: []domain.RenderVersion{}, Status: "draft", VideoRewrite: state, CreatedAt: now(), UpdatedAt: now()}
 	if a.put(c, "videos", v.ID, v) {
-		c.JSON(201, v)
+		c.JSON(201, publicVideoProject(v))
 	}
 }
 
@@ -449,7 +449,7 @@ func (a *App) editVideoRewrite(c *gin.Context) {
 		next.Prompt = *b.VideoRewrite.Prompt
 	}
 	if a.put(c, "videos", v.ID, v) {
-		c.JSON(200, v)
+		c.JSON(200, publicVideoProject(v))
 	}
 }
 

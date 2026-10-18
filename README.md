@@ -28,6 +28,10 @@
 - **素材管理**：按项目组织图片和视频，选择发布素材并调整顺序。
 - **发布管理**：文案与媒体校验、发布稿快照、导出，以及本人扫码后的发布操作。
 - **任务管理**：后台执行、状态查询、失败重试和历史清理。
+- **双端与账号**：独立用户端与管理员端，支持账号管理、数据隔离、共享模型配置、调用额度与审计；首次启动生成两个随机密码账号。
+- **计费面板**：记录实际 Token 用量，按时间、模型与功能可视化，查看输入/输出及缓存/推理明细，配置单价估算费用并导出 CSV。
+
+双端入口、数据归属、权限与备份方式见 [账号和管理端说明](docs/accounts-and-admin.md)。
 
 ## 架构
 
@@ -80,9 +84,9 @@ cd RedNote_BuddY
 .\scripts\start.ps1
 ```
 
-首次准备环境需要联网下载依赖。可用 `setup.ps1 -PythonPath 'C:\Python312\python.exe'` 指定 Python。FFmpeg / FFprobe 可安装到系统 PATH，或在工作台设置页指定路径。
+首次准备环境需要联网下载依赖。可用 `setup.ps1 -PythonPath 'C:\Python312\python.exe'` 指定 Python。FFmpeg / FFprobe 可安装到系统 PATH，或在管理员端的模型服务页指定路径。
 
-页面打开后，在设置中填写自己的模型地址、模型名称和密钥。示例配置见 [config.example.json](config.example.json)，示例不含真实凭据。
+首次启动后，从本机 `data/initial-accounts.txt` 获取 `user` 与 `admin` 的随机初始密码，登录后先修改密码。用户端为 `/`，管理员端为 `/admin`；模型地址、模型名称和密钥在管理员端配置。示例配置见 [config.example.json](config.example.json)，示例不含真实凭据。
 
 默认地址：
 
@@ -176,7 +180,7 @@ npm run test:e2e
 | 中期 | 创作模板与模型适配 | 复用文案、图片和视频的提示词及参数模板；为各模型维护能力说明、参数校验和适配器测试，生成前展示用量估算与限制。 |
 | 中期 | 素材去重与检索 | 按文件内容哈希识别重复素材，增加标签、全文检索和引用关系，清理前展示受影响项目，减少重复保存与误删。 |
 | 中期 | API 契约与持续集成 | 使用 OpenAPI 描述接口，生成 TypeScript 类型或客户端，并在提交与合并时自动运行前后端测试、接口兼容性检查和独立构建。 |
-| 长期、按需 | 跨平台与团队部署 | 先梳理 Windows 路径、凭据保护及本机依赖，再提供其他系统的运行方案；团队版需补齐登录、角色权限、工作区隔离与审计，并按并发需求评估数据库和对象存储。 |
+| 长期、按需 | 跨平台与团队部署 | 先梳理 Windows 路径、凭据保护及本机依赖，再提供其他系统的运行方案；现有登录、角色隔离与审计基础上补齐公网部署、HTTPS、身份恢复和运维监控，并按并发需求评估数据库和对象存储。 |
 
 实施参考：[SQLite 在线备份](https://www.sqlite.org/backup.html)、[OpenAPI 规范](https://spec.openapis.org/oas/latest.html)、[GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions)。
 
@@ -184,6 +188,7 @@ npm run test:e2e
 
 - [前后端分离与部署说明](docs/frontend-backend.md)
 - [API 文档](docs/api.md)
+- [计费面板与用量口径](docs/billing.md)
 - [本地依赖](docs/local-dependencies.md)
 - [图片仿写工作流](docs/image-workflow-v2.md)
 - [素材库与发布边界](docs/media-library-actions-20261012.md)

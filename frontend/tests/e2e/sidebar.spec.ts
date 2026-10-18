@@ -1,7 +1,9 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 async function fixture(page: Page) {
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const pathname = new URL(route.request().url()).pathname;
     const body = pathname.endsWith('/workspaces')
       ? { items: [{ id: 'xiaohongshu', platform: 'xiaohongshu' }], total: 1 }

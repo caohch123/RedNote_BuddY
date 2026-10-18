@@ -21,6 +21,9 @@ var ErrConflict = errors.New("publication already submitted")
 //go:embed migrations/001_initial.sql
 var initialMigration string
 
+//go:embed migrations/002_billing.sql
+var billingMigration string
+
 type Store struct{ db *sql.DB }
 
 func Open(path string) (*Store, error) {
@@ -32,7 +35,7 @@ func Open(path string) (*Store, error) {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	for _, q := range []string{"PRAGMA journal_mode=WAL", "PRAGMA foreign_keys=ON", "PRAGMA busy_timeout=5000", initialMigration} {
+	for _, q := range []string{"PRAGMA journal_mode=WAL", "PRAGMA foreign_keys=ON", "PRAGMA busy_timeout=5000", initialMigration, billingMigration} {
 		if _, err = db.Exec(q); err != nil {
 			db.Close()
 			return nil, err

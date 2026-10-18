@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 test('发布素材汇总当前文案与图片视频，确认版本后可准备视频发布', async ({ page }) => {
@@ -10,6 +11,7 @@ test('发布素材汇总当前文案与图片视频，确认版本后可准备�
   const account = { id: 'owner', nickname: '本人测试账号' };
   let publication: any; let createBody: any; let publishCalls = 0;
   await page.route('**/api/v1/**', route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const path = new URL(request.url()).pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (path === '/session') return json({ csrf_token: 'publish-materials' });

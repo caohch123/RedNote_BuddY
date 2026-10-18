@@ -4,6 +4,20 @@ import { workspacePath } from './platform';
 const base = (import.meta.env.VITE_API_BASE_URL || '/api/v1').trim().replace(/\/+$/, '');
 export function apiURL(path: string) { return `${base}${path}`; }
 let token: Promise<string> | undefined;
+let tokenRealm = '';
+let authenticated = false;
+export const AUTH_EXPIRED_EVENT = 'workbench:session-expired';
+
+export function authRealm(): 'user' | 'admin' {
+  return typeof window !== 'undefined' && /^\/admin(?:\/|$)/.test(window.location.pathname) ? 'admin' : 'user';
+}
+
+export function resetCSRF() { token = undefined; tokenRealm = ''; }
+export function setCSRF(value?: string) {
+  tokenRealm = authRealm();
+  token = value ? Promise.resolve(value) : undefined;
+}
+export function markSessionAuthenticated(value: boolean) { authenticated = value; }
 
 export class ApiError extends Error {
   status: number;
@@ -14,20 +28,30 @@ export class ApiError extends Error {
 }
 
 async function csrf(): Promise<string> {
-  if (!token) token = fetch(`${base}/session`, { credentials: 'same-origin' })
+  const realm = authRealm();
+  if (tokenRealm !== realm) resetCSRF();
+  if (!token) {
+    tokenRealm = realm;
+    const pending = fetch(`${base}/session?realm=${realm}`, { credentials: 'include' })
     .then(async r => {
       if (!r.ok) throw new Error('无法连接工作台服务，请检查服务是否已启动');
       const data = await r.json();
       if (!data.csrf_token) throw new Error('会话初始化失败');
       return data.csrf_token as string;
-    }).catch(e => { token = undefined; throw e; });
+    }).catch(e => { if (token === pending) resetCSRF(); throw e; });
+    token = pending;
+  }
   return token;
 }
 
 async function checked(response: Response) {
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    if (response.status === 403) token = undefined;
+    if (response.status === 403) resetCSRF();
+    if (response.status === 401 && authenticated) {
+      authenticated = false; resetCSRF();
+      if (typeof window !== 'undefined') window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+    }
     throw new ApiError(data.error || `请求失败 (${response.status})`, response.status, data.code);
   }
   return response;
@@ -39,7 +63,7 @@ export async function api<T>(path: string, method = 'GET', data?: unknown): Prom
   if (data !== undefined) headers['Content-Type'] = 'application/json';
   let response: Response;
   try { response = await fetch(`${base}${path}`, {
-    method, headers, credentials: 'same-origin', body: data === undefined ? undefined : JSON.stringify(data),
+    method, headers, credentials: 'include', body: data === undefined ? undefined : JSON.stringify(data),
   }); } catch { throw new Error('无法连接工作台服务，请检查服务是否已启动'); }
   await checked(response);
   if (response.status === 204) return undefined as T;
@@ -49,7 +73,7 @@ export async function api<T>(path: string, method = 'GET', data?: unknown): Prom
 export async function upload(file: File, ownerID: string, path = '/assets') {
   const data = new FormData(); data.append('file', file); data.append('owner_id', ownerID);
   const r = await fetch(`${base}${path}`, {
-    method: 'POST', headers: { 'X-CSRF-Token': await csrf() }, body: data, credentials: 'same-origin',
+    method: 'POST', headers: { 'X-CSRF-Token': await csrf() }, body: data, credentials: 'include',
   });
   await checked(r); return r.json();
 }
@@ -62,7 +86,7 @@ export function assetURL(id: string, platform?: Platform) {
 export async function download(path: string, fallback: string, changesState = false) {
   const headers: Record<string, string> = {};
   if (changesState) headers['X-CSRF-Token'] = await csrf();
-  const response = await checked(await fetch(`${base}${path}`, { credentials: 'same-origin', headers }));
+  const response = await checked(await fetch(`${base}${path}`, { credentials: 'include', headers }));
   const disposition = response.headers.get('Content-Disposition') || '';
   const encoded = disposition.match(/filename\*=UTF-8''([^;]+)/i);
   const plain = disposition.match(/filename="?([^";]+)"?/i);

@@ -4,7 +4,7 @@
 
 普通成功响应直接返回资源；列表响应为 `{items,total}`；错误响应为 `{error,code}`。耗时操作返回 HTTP 202 和 `{job_id,job_ids?}`，通过 `/jobs` 查询进度。
 
-首先调用 `GET /session` 获取 `{csrf_token}`。所有写操作，以及会更新导出状态的 `GET /publications/:id/export`，需要 `X-CSRF-Token`。Host 必须匹配 API 地址；Origin 必须匹配 API 自身或后端明确配置的前端来源，支持 CORS 预检。AI 密钥与采集 Cookie 经设置写入，读取仅返回掩码和配置状态；创作平台登录会话由扫码流程取得并由后端加密保存，账号接口只返回显示资料与状态。
+API 现要求用户或管理员会话。先调用 `GET /session?realm=user`（管理员使用 `realm=admin`），保留 Cookie 与 `{csrf_token}`，再调用对应的 `/auth/login` 或 `/admin/auth/login`。首次登录需要改密，完整双端接口与权限见 [账号和管理端](accounts-and-admin.md)。所有写操作，以及会更新导出状态的 `GET /publications/:id/export`，需要 `X-CSRF-Token`。Host 必须匹配 API 地址；Origin 必须匹配 API 自身或后端明确配置的前端来源，支持 CORS 预检。AI 密钥与采集 Cookie 经设置写入，读取仅返回掩码和配置状态；创作平台登录会话由扫码流程取得并由后端加密保存，账号接口只返回显示资料与状态。
 
 ## 工作区范围
 
@@ -67,9 +67,9 @@ AI 服务配置共用。保存设置前获取最新配置，仅提交脏字段�
 | DELETE `/jobs/completed?platform=xiaohongshu` | 旧客户端兼容入口，只清理已结束的任务；新界面使用 DELETE `/jobs` |
 | POST `/jobs/:id/retry` | `{remote_task_id?}`；仅旧视频任务可填远程ID恢复；图片提交结果不明时暂停并拒绝重投 |
 | GET `/settings` | 配置地址、模型、工具路径、密钥掩码 |
-| PATCH `/settings` | 部分更新配置，前端仅提交脏字段；工具路径空字符串表示自动检测，省略保持原值；Node路径切换遇到正在执行的账号操作返回409；空密钥保留原值，`__CLEAR__` 清除指定密钥或 Cookie；AI 服务共用 |
-| POST `/settings/test` | `{capability:'collector'\|'text'\|'vision'\|'ocr'\|'asr'\|'tts'\|'image'\|'video'}`；返回 `{ok,message}` |
-| GET `/health` | `{ok,dependencies}`，逐项检查采集服务、数据库查询和工具实际版本；工具项返回ok/path/version/message，检测和运行共用路径解析，不启动浏览器 |
+| PATCH `/settings` | 普通用户仅可更新自己的 `{cookie}`；以下配置字段仅通过管理员 `/admin/models` 更新：前端仅提交脏字段；工具路径空字符串表示自动检测，省略保持原值；Node路径切换遇到正在执行的账号操作返回409；空密钥保留原值，`__CLEAR__` 清除指定密钥或 Cookie；AI 服务共用 |
+| POST `/settings/test`（内部接口，用户端禁用） | `{capability:'collector'\|'text'\|'vision'\|'ocr'\|'asr'\|'tts'\|'image'\|'video'}`；返回 `{ok,message}` |
+| GET `/health` | 公开最小状态 `{service,status,authentication:true}`，不暴露运行环境详情 |
 | GET `/assets` | 可按 `owner_id` 查询；不会返回本地文件路径 |
 | POST `/assets` | multipart：`file,owner_id`，仅支持图片、视频和音频 |
 | GET `/assets/:id/file` | 本地预览／下载，支持 HTTP Range；`?download=1` 下载附件 |

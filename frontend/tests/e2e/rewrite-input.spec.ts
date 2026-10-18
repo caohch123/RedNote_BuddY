@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 test('旧项目自动使用全部来源文字，编辑器不再被来源栏分割', async ({ page }) => {
@@ -13,6 +14,7 @@ test('旧项目自动使用全部来源文字，编辑器不再被来源栏分�
   ];
   let submitted: any;
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const url = new URL(route.request().url()); const path = url.pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value), status });
     if (path === '/workspaces') return json({ items: [{ id: 'xiaohongshu', platform: 'xiaohongshu' }], total: 1 });
@@ -52,6 +54,7 @@ for (const initialVersion of [true, false]) {
     const rewrite = { id: 'rewrite', note_id: note.id, title: note.title, versions: initialVersion ? [version] : [], options: {} };
     let submitted: any;
     await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
       const request = route.request(); const url = new URL(request.url()); const path = url.pathname.replace('/api/v1', '');
       const json = (value: unknown, status = 200) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value), status });
       if (path === '/workspaces') return json({ items: [{ id: 'xiaohongshu', platform: 'xiaohongshu' }], total: 1 });
@@ -92,6 +95,7 @@ test('视频方案初始化异常可重试，不会使文案工作区崩溃', as
   const errors: string[] = []; let attempts = 0;
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/api/v1/**', route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '');
     const json = (value: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(value) });
     if (path === '/workspaces') return json({ items: [{ id: 'xiaohongshu', platform: 'xiaohongshu' }], total: 1 });

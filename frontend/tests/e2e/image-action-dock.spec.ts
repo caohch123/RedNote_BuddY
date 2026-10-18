@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 async function fixture(page: Page) {
@@ -17,6 +18,7 @@ async function fixture(page: Page) {
     }
   });
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const req = route.request(); const path = new URL(req.url()).pathname.replace('/api/v1', '');
     if (req.method() !== 'GET') { writes.push(path); return route.fulfill({ status: 500, json: { error: '布局测试不允许写入' } }); }
     const json = (value: unknown) => route.fulfill({ json: value });

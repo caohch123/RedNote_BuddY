@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
@@ -58,6 +59,7 @@ async function fixture(page: Page, options: { legacy?: boolean; legacyV2?: boole
   const sizes = [{ ratio: '3:4', clarity: 'standard', width: 960, height: 1280 }, { ratio: '3:4', clarity: 'high', width: 1536, height: 2048 }, { ratio: '1:1', clarity: 'standard', width: 1024, height: 1024 }, { ratio: '1:1', clarity: 'high', width: 2048, height: 2048 }, { ratio: '9:16', clarity: 'standard', width: 720, height: 1280 }, { ratio: '9:16', clarity: 'high', width: 1152, height: 2048 }];
   function job(kind: string) { const id = `${kind}-${calls.length}`; jobs = [{ id, kind, entity_id: rewrite.id, scene_id: unit().id, state: 'succeeded' }]; return { job_id: id }; }
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const req = route.request(); const url = new URL(req.url()); const path = url.pathname.replace('/api/v1', ''); const method = req.method();
     const json = (data: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(data) });
     if (method !== 'GET') { expect(req.headers()['x-csrf-token']).toBe('test-csrf'); calls.push({ path, body: req.postDataJSON() }); }

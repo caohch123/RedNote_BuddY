@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJEkAAAAASUVORK5CYII=', 'base64');
@@ -14,6 +15,7 @@ test('小红书页面在滚动锁残留时仍可滚动，封面下载完成后�
     asset_ids: index === 0 ? ['cover-ready'] : [], tags: [], topics: [], collected_at: '2026-10-09T08:00:00Z',
   }));
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const path = new URL(route.request().url()).pathname.replace('/api/v1', '');
     const json = (body: unknown) => route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
     if (path === '/workspaces') return json({ items: [{ id: 'xiaohongshu', platform: 'xiaohongshu', name: '小红书工作区' }], total: 1 });

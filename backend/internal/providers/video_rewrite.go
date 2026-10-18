@@ -348,12 +348,23 @@ func (c *Client) CreateVideoRewrite(ctx context.Context, input VideoRewriteReque
 	}
 	client := *c.http
 	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	release, e := c.acquireUsage(ctx, "video")
+	if e != nil {
+		return "", e
+	}
+	defer release()
 	resp, e := client.Do(req)
 	if e != nil {
+		c.reportUsage(p, usageContext{capability: "video"}, 0, nil)
 		return "", ErrSubmissionUnknown
 	}
 	defer resp.Body.Close()
 	raw, e := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	usageStatus := resp.StatusCode
+	if e != nil {
+		usageStatus = 0
+	}
+	c.reportUsage(p, usageContext{capability: "video"}, usageStatus, raw)
 	if e != nil {
 		return "", ErrSubmissionUnknown
 	}
@@ -408,7 +419,8 @@ func (c *Client) PollVideo(ctx context.Context, id string) (VideoTaskResult, err
 			Duration   float64 `json:"output_video_duration"`
 		} `json:"usage"`
 	}
-	if e = c.request(ctx, p, "GET", endpoint(base, "/tasks/")+url.PathEscape(id), nil, &out); e != nil {
+	pollCtx := context.WithValue(ctx, usageContextKey{}, usageContext{capability: "video", taskID: id, poll: true})
+	if e = c.request(pollCtx, p, "GET", endpoint(base, "/tasks/")+url.PathEscape(id), nil, &out); e != nil {
 		return result, e
 	}
 	result.URL = out.Output.URL

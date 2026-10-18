@@ -88,3 +88,8 @@ npm start -- --port 8080 --api-target http://127.0.0.1:8082
 - 独立构建、重复启动复用与运行检查通过。8080 为 Node 前端，8082 为 Go API，原有 5556 采集进程保留。
 - 切换前后逐项核对记录 ID：采集记录 3、仿写项目 3、发布稿 3、素材 11、任务 34，均保持一致。
 - 记录位于 `data/verification/separation-*.json`、`separation-backend-20261017.jsonl` 与 `separation-ui-20261017.png`。
+
+
+## 用户端与管理端
+
+后端生产入口现在使用 Portal 会话层，所有业务 API 必须先登录，初始用户保留原有数据；新增用户分别使用独立数据目录。`/` 与 `/admin` 使用不同的 HttpOnly Cookie 和会话 CSRF，可同时登录。管理员统一维护模型和额度，普通用户设置页仅管理个人连接。首次账号与迁移备份方法见 [账号和管理端](accounts-and-admin.md)。内部 `App.Router()` 仅用于 Portal 分发及业务测试，不能绕过 Portal 作为生产监听器。

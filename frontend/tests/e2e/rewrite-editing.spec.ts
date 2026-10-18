@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 async function fixture(page: Page, longTitle = false, rejectRenameOnce = false, includeOther = false) {
@@ -14,6 +15,7 @@ async function fixture(page: Page, longTitle = false, rejectRenameOnce = false, 
     localStorage.setItem('workbench.xiaohongshu.sidebarCollapsed', 'true');
   });
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const req = route.request(), url = new URL(req.url()), path = url.pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (req.method() !== 'GET') {

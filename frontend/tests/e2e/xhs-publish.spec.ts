@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 const qr = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aJEkAAAAASUVORK5CYII=';
@@ -9,6 +10,7 @@ async function fixtures(page: Page, options: { loggedIn?: boolean; loginStates?:
   const mutations: { path: string; body: any; csrf?: string }[] = [];
   const assets = ['image-second', 'image-first'].map((id, position) => ({ id, kind: 'image', mime: 'image/png', status: 'ready', position, width: 1200, height: 1600, duration: 0, size: 100, sha256: 'fixture-sha' }));
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const req = route.request(); const path = new URL(req.url()).pathname.replace('/api/v1', ''); const method = req.method(); const csrf = req.headers()['x-csrf-token'];
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (method !== 'GET') { mutations.push({ path, body: req.postDataJSON(), csrf }); if (csrf !== 'csrf-fixture') return json({ error: '缺少 CSRF' }, 403); }

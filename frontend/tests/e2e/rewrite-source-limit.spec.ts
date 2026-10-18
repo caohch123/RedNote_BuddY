@@ -1,9 +1,11 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 test('加入来源达到两份后打开最新项目，再次加入仍跳转到同一最新项目', async ({ page }) => {
   const note = { id: 'source', platform: 'xiaohongshu', title: '同一来源', body: '正文', type: 'normal', status: 'ready', metadata_status: 'succeeded', asset_ids: [], topics: [], tags: [], author: {} };
   const projects: any[] = []; let additions = 0;
   await page.route('**/api/v1/**', route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const path = new URL(request.url()).pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (path === '/workspaces') return json({ items: [{ platform: 'xiaohongshu' }], total: 1 });

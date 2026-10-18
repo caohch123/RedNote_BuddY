@@ -24,8 +24,10 @@ var ErrConnectionFailed = errors.New("服务连接失败或超时，请检查 AP
 var ErrSubmissionUnknown = errors.New("视频任务提交结果不明：为避免重复计费已暂停，请在供应商控制台核实并填入任务 ID 后恢复")
 
 type Client struct {
-	settings domain.Settings
-	http     *http.Client
+	settings   domain.Settings
+	http       *http.Client
+	usage      func(domain.UsageRecord)
+	usageGuard func(context.Context, string) (func(), error)
 }
 
 func New(settings domain.Settings) *Client {
@@ -133,8 +135,18 @@ func (c *Client) request(ctx context.Context, p domain.ProviderConfig, method, u
 		req.Header.Set("X-DashScope-WorkSpace", p.WorkspaceID)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if meta, ok := ctx.Value(usageContextKey{}).(usageContext); ok && !meta.poll {
+		release, err := c.acquireUsage(ctx, meta.capability)
+		if err != nil {
+			return err
+		}
+		defer release()
+	}
 	resp, e := c.http.Do(req)
 	if e != nil {
+		if meta, ok := ctx.Value(usageContextKey{}).(usageContext); ok {
+			c.reportUsage(p, meta, 0, nil)
+		}
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
@@ -142,6 +154,14 @@ func (c *Client) request(ctx context.Context, p domain.ProviderConfig, method, u
 	}
 	defer resp.Body.Close()
 	b, e := io.ReadAll(io.LimitReader(resp.Body, 16<<20))
+	if meta, ok := ctx.Value(usageContextKey{}).(usageContext); ok {
+		status := resp.StatusCode
+		if e != nil {
+			status = 0
+			b = nil
+		}
+		c.reportUsage(p, meta, status, b)
+	}
 	if e != nil {
 		return errors.New("读取服务响应失败")
 	}
@@ -184,7 +204,7 @@ func (c *Client) chat(ctx context.Context, capability string, messages []map[str
 			} `json:"message"`
 		} `json:"choices"`
 	}
-	if e = c.request(ctx, p, "POST", endpoint(p.BaseURL, "/chat/completions"), request, &out); e != nil {
+	if e = c.request(usageCtx(ctx, capability), p, "POST", endpoint(p.BaseURL, "/chat/completions"), request, &out); e != nil {
 		return "", e
 	}
 	if len(out.Choices) == 0 {

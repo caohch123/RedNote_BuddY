@@ -5,22 +5,26 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Badge, Button, Layout, Menu, Spin, Typography } from 'antd';
+import { App as AntApp, Badge, Button, Dropdown, Layout, Menu, Spin, Typography } from 'antd';
 import {
   DatabaseOutlined,
   EditOutlined,
   FileDoneOutlined,
   LoadingOutlined,
+  LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   SettingOutlined,
   SwapOutlined,
   UnorderedListOutlined,
+  UserOutlined,
+  WalletOutlined,
 } from '@ant-design/icons';
 const Collections = lazy(() => import('./pages/Collections'));
 const Rewrites = lazy(() => import('./pages/Rewrites'));
 const Publications = lazy(() => import('./pages/Publications'));
-const Settings = lazy(() => import('./pages/Settings'));
+const Settings = lazy(() => import('./pages/AccountSettings'));
+const Billing = lazy(() => import('./pages/Billing'));
 import JobsDrawer from './components/JobsDrawer';
 import { useResource } from './hooks';
 import type { Job, List, Platform } from './types';
@@ -33,20 +37,25 @@ import { WorkspaceRegistryContext, type WorkspaceRecord } from './workspaceRegis
 import type { DeletionResult } from './deletion';
 import { WorkspaceScrollbarHost } from './components/WorkspaceTableScrollbar';
 import { WorkspaceActionHost } from './components/WorkspaceActionDock';
+import { useAuth } from './auth-context';
 
-type Page = 'collections' | 'rewrites' | 'publications' | 'settings';
+type Page = 'collections' | 'rewrites' | 'publications' | 'billing' | 'settings';
 const pageNames: Record<Page, string> = {
   collections: '采集库',
   rewrites: '仿写库',
   publications: '发布管理',
   settings: '设置',
+  billing: '计费面板',
 };
 const navigationItems = [
   { key: 'collections', icon: <DatabaseOutlined />, label: '采集库', 'aria-label': '采集库' },
   { key: 'rewrites', icon: <EditOutlined />, label: '仿写库', 'aria-label': '仿写库' },
   { key: 'publications', icon: <FileDoneOutlined />, label: '发布管理', 'aria-label': '发布管理' },
 ];
-const settingsItems = [{ key: 'settings', icon: <SettingOutlined />, label: '设置', 'aria-label': '设置' }];
+const settingsItems = [
+  { key: 'billing', icon: <WalletOutlined />, label: '计费面板', 'aria-label': '计费面板' },
+  { key: 'settings', icon: <SettingOutlined />, label: '设置', 'aria-label': '设置' },
+];
 
 function savedPage(platform: Platform): Page {
   try {
@@ -83,6 +92,8 @@ function Workspace({
   other?: Platform;
   onSwitch: () => void;
 }) {
+  const { user, logout } = useAuth();
+  const { message } = AntApp.useApp();
   const [scrollbarHost, setScrollbarHost] = useState<HTMLDivElement | null>(null);
   const [actionHost, setActionHost] = useState<HTMLDivElement | null>(null);
   const [page, setPage] = useState<Page>(() => savedPage(platform));
@@ -162,7 +173,7 @@ function Workspace({
                 <div className="sidebar-bottom">
                   <div className="workspace-label">
                     <span className="online-dot" />
-                    {platformNames[platform]} · 本地个人工作区
+                    {platformNames[platform]} · {user.display_name || user.username}的工作区
                   </div>
                   <Menu
                     mode="inline"
@@ -223,6 +234,19 @@ function Workspace({
                         后台任务
                       </Button>
                     </Badge>
+                    <Dropdown trigger={['click']} menu={{
+                      items: [
+                        { key: 'account', icon: <UserOutlined />, label: '账户设置' },
+                        { type: 'divider' },
+                        { key: 'logout', icon: <LogoutOutlined />, label: '退出登录' },
+                      ],
+                      onClick: ({ key }) => {
+                        if (key === 'account') navigate('settings');
+                        if (key === 'logout') void logout().catch(reason => message.error(reason instanceof Error ? reason.message : '退出登录失败'));
+                      },
+                    }}>
+                      <Button className="workspace-account-button" icon={<UserOutlined />} aria-label="工作台账户菜单" title={user.display_name || user.username}><span className="workspace-account-name">{user.display_name || user.username}</span></Button>
+                    </Dropdown>
                   </div>
                 </Layout.Header>
                 <Layout.Content
@@ -270,6 +294,11 @@ function Workspace({
                         </div>
                       </WorkspaceContext.Provider>
                     )}
+                    {visited.includes('billing') && (
+                      <WorkspaceContext.Provider value={{ platform, active: active && page === 'billing' }}>
+                        <div hidden={page !== 'billing'}><Billing /></div>
+                      </WorkspaceContext.Provider>
+                    )}
                     {visited.includes('settings') && (
                       <WorkspaceContext.Provider
                         value={{ platform, active: active && page === 'settings' }}
@@ -300,6 +329,9 @@ function Workspace({
 }
 
 export default function App() {
+  const { user, logout } = useAuth();
+  const { message } = AntApp.useApp();
+  const emptyAccountActions = <div className="empty-account-actions"><Typography.Text type="secondary">{user.display_name || user.username}</Typography.Text><Button type="text" icon={<LogoutOutlined />} onClick={() => void logout().catch(reason => message.error(reason instanceof Error ? reason.message : '退出登录失败'))}>退出登录</Button></div>;
   const [platform, setPlatform] = useState<Platform>(readWorkspace);
   const [visited, setVisited] = useState<Platform[]>([]);
   const registry = useResource<List<WorkspaceRecord>>('/workspaces', 5000);
@@ -363,12 +395,14 @@ export default function App() {
     <WorkspaceRegistryContext.Provider value={{ items, add: addWorkspace, remove: removeWorkspace }}>
       {!registry.data ? (
         <div className="workspace-empty">
+          {emptyAccountActions}
           <Typography.Title level={3}>内容工作台</Typography.Title>
           <Failure error={registry.error} retry={() => void registry.reload()} />
           {registry.loading && <Spin />}
         </div>
       ) : !items.length ? (
         <div className="workspace-empty">
+          {emptyAccountActions}
           <Typography.Title level={3}>添加你的第一个工作区</Typography.Title>
           <WorkspaceManager empty />
         </div>

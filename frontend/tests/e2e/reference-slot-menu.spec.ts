@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test } from '@playwright/test';
 
 for (const workflow of ['image', 'video'] as const) for (const width of [1536, 644, 360]) {
@@ -12,6 +13,7 @@ for (const workflow of ['image', 'video'] as const) for (const width of [1536, 6
     const rewrite = { id: 'rewrite', note_id: note.id, title: note.title, versions: [version], image_rewrites: workflow === 'image' ? [unit] : [], options: {} };
     let uploads = 0;
     await page.route('**/api/v1/**', route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
       const request = route.request(); const path = new URL(request.url()).pathname.replace('/api/v1', '');
       const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
       if (path === '/workspaces') return json({ items: [{ platform: 'xiaohongshu' }], total: 1 });

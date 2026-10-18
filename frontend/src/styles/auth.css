@@ -1,0 +1,71 @@
+.portal-login { min-height: 100dvh; display: grid; grid-template-columns: minmax(360px, 46%) 1fr; background: #fff; }
+.portal-intro { position: relative; display: flex; flex-direction: column; padding: 48px clamp(36px, 5vw, 92px); overflow: hidden; color: #fff; background: radial-gradient(ellipse at 6% 100%, #345b95 0%, transparent 62%), linear-gradient(145deg, #152340, #2b2b51); }
+.portal-login-admin .portal-intro { background: radial-gradient(ellipse at 6% 100%, #486267 0%, transparent 62%), linear-gradient(145deg, #182b3c, #263b50); }
+.portal-brand { display: flex; align-items: center; gap: 14px; width: fit-content; color: #fff; font-weight: 750; font-size: 25px; letter-spacing: -.6px; }
+.portal-brand:hover { color: #fff; }
+.portal-brand img { width: 48px; height: 48px; border-radius: 13px; }
+.portal-brand-sub { display: block; margin-top: 3px; font-weight: 400; font-size: 11px; letter-spacing: 2px; opacity: .65; }
+.portal-intro-copy { margin: auto 0; padding: 90px 0; }
+.portal-eyebrow { color: #a3badf; font-size: 11px; font-weight: 600; letter-spacing: 2px; }
+.portal-intro h1 { margin: 24px 0; color: #fff; font-size: clamp(38px, 4.2vw, 62px); line-height: 1.38; font-weight: 650; letter-spacing: 1px; }
+.portal-intro-copy p { max-width: 320px; margin: 0; font-size: 15px; line-height: 1.9; color: #c1cde0; }
+.portal-intro-footer { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #a8bbd5; }
+.portal-login-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 64px 40px 30px; }
+.portal-login-card { width: 100%; max-width: 390px; margin: auto; }
+.portal-login-card h2.ant-typography { margin-top: 21px; margin-bottom: 10px; font-size: 29px; letter-spacing: -.5px; }
+.portal-login-card > .ant-typography { margin-bottom: 32px; }
+.portal-login-card .ant-alert { margin-bottom: 20px; }
+.portal-realm-tag.ant-tag { border: 0; padding: 4px 10px; background: #eef3ff; color: #42639e; font-size: 12px; }
+.portal-login-card .ant-form-item { margin-bottom: 24px; }
+.portal-login-card .ant-input-affix-wrapper { padding-block: 10px; }
+.portal-login-card .ant-input-prefix { color: #94a0b4; margin-inline-end: 10px; }
+.portal-login-card .ant-btn-lg { height: 46px; margin-top: 4px; }
+.portal-entry-switch { margin-top: 30px; display: flex; gap: 8px; justify-content: center; font-size: 12px; color: #8b95a6; }
+.portal-entry-switch a { display: inline-flex; align-items: center; gap: 4px; }
+.portal-login-footnote { margin-top: 44px; color: #a2abba; font-size: 11px; letter-spacing: .5px; }
+.portal-loading { min-height: 100dvh; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 22px; padding: 24px; color: #7b879d; }
+.portal-loading > .ant-alert { max-width: 520px; }
+.portal-password-page { display: flex; min-height: 100dvh; align-items: center; justify-content: center; background: #f7f8fc; padding: 40px 24px; }
+.portal-password-card { width: 100%; max-width: 480px; border: 1px solid #e6eaf1; border-radius: 20px; background: #fff; padding: 36px 40px; box-shadow: 0 10px 44px #213b5c08; }
+.portal-password-card h2.ant-typography { margin: 20px 0 12px; }
+.portal-password-card > .ant-typography { line-height: 1.8; margin-bottom: 24px; }
+.password-change-form > .ant-alert { margin-bottom: 20px; }
+.password-change-form .ant-form-item-extra { padding-top: 5px; font-size: 12px; }
+.portal-password-exit { width: 100%; justify-content: center; margin-top: 20px; }
+.workspace-account-button.ant-btn { display: flex; align-items: center; gap: 7px; max-width: 160px; }
+.workspace-account-name { max-width: 95px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty-account-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; margin-bottom: 24px; }
+.account-settings-page { max-width: 1100px; width: 100%; margin: 0 auto; padding-bottom: 28px; }
+.account-settings-page .ant-card-body { padding: 26px; }
+.account-settings-page .password-change-form { max-width: 420px; }
+.account-settings-heading { display: flex; align-items: center; gap: 12px; }
+.account-settings-heading h3.ant-typography { margin: 0; }
+.account-config-models { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+.account-config-model { padding: 16px; border: 1px solid #edf0f5; border-radius: 10px; min-width: 0; }
+.account-config-model > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px; }
+.account-config-model .ant-typography { overflow-wrap: anywhere; font-size: 12px; }
+.account-cookie-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+@media (max-width: 1000px) {
+  .portal-login { grid-template-columns: minmax(300px, 40%) 1fr; }
+  .portal-intro { padding: 36px 30px; }
+  .portal-intro h1 { font-size: 38px; }
+  .account-config-models { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .workspace-account-name { display: none; }
+  .workspace-account-button.ant-btn { padding-inline: 10px; }
+}
+@media (max-width: 700px) {
+  .portal-login { display: flex; flex-direction: column; }
+  .portal-intro { padding: 24px; }
+  .portal-brand { font-size: 22px; }
+  .portal-brand img { width: 40px; height: 40px; }
+  .portal-intro-copy { padding: 25px 0 5px; }
+  .portal-eyebrow, .portal-intro-copy p, .portal-intro-footer { display: none; }
+  .portal-intro h1 { margin: 0; font-size: 26px; letter-spacing: 0; }
+  .portal-intro h1 br { display: none; }
+  .portal-login-panel { flex: 1; padding: 34px 24px 22px; }
+  .portal-login-card h2.ant-typography { font-size: 25px; }
+  .portal-login-footnote { margin-top: 36px; }
+  .portal-password-card { padding: 28px 24px; }
+  .account-settings-page .ant-card-body { padding: 20px; }
+  .account-config-models { grid-template-columns: 1fr; }
+}

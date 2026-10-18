@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -15,6 +16,7 @@ async function fixture(page: Page, platform = 'xiaohongshu', duplicateAssets = f
   const writes: { path: string; body: any }[] = [];
   let publication: any;
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const request = route.request(); const url = new URL(request.url()); const routePath = url.pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (request.method() !== 'GET') {

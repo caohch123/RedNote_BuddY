@@ -1,3 +1,4 @@
+import { memberAuthResponse } from './member-auth';
 import { expect, test, type Page } from '@playwright/test';
 
 async function fixture(page: Page, failOnce = false) {
@@ -15,6 +16,7 @@ async function fixture(page: Page, failOnce = false) {
     localStorage.setItem('workbench.xiaohongshu.sidebarCollapsed', 'true');
   });
   await page.route('**/api/v1/**', async route => {
+    const authResponse = memberAuthResponse(route); if (authResponse) return authResponse;
     const req = route.request(), url = new URL(req.url()), path = url.pathname.replace('/api/v1', '');
     const json = (value: unknown, status = 200) => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(value) });
     if (req.method() !== 'GET') {
@@ -82,8 +84,8 @@ test('新增空白项目清空来源并可保存确认、独立上传图片，�
   await (await chooser).setFiles({ name: '自己的参考图.png', mimeType: 'image/png', buffer: Buffer.from('fixture-image') });
   await expect.poll(() => image.primary_asset_id).toBe('new-upload'); await expect(primary).toHaveClass(/has-media/);
   await page.getByRole('tab', { name: '视频仿写', exact: true }).click();
-  await expect(page.locator('#rc-tabs-0-panel-video .reference-slot-card')).toHaveCount(3);
-  await expect(page.locator('#rc-tabs-0-panel-video .reference-slot-card.has-media')).toHaveCount(0);
+  await expect(page.getByRole('tabpanel', { name: '视频仿写', exact: true }).locator('.reference-slot-card')).toHaveCount(3);
+  await expect(page.getByRole('tabpanel', { name: '视频仿写', exact: true }).locator('.reference-slot-card.has-media')).toHaveCount(0);
   expect(writes.filter(item => item.path === '/rewrites')).toHaveLength(1);
   expect(writes.filter(item => /generate|analyze|compose/.test(item.path))).toHaveLength(0);
   expect(old.versions).toHaveLength(1); expect(old.versions[0].body).toBe('已有来源正文');
