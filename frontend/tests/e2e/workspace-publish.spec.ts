@@ -48,9 +48,9 @@ async function fixture(page: Page, loggedIn = true, options: { workspaceEmpty?: 
 
 test('发布管理只显示小红书账号、稿件和创作入口', async ({ page }) => {
   const { requests } = await fixture(page); await page.getByRole('menuitem', { name: '发布管理' }).click();
-  await expect(page.locator('.publication-page > .xhs-account-panel')).toHaveCSS('border-radius', '0px');
-  await expect(page.locator('.publication-page .overview-card').first()).toHaveCSS('border-radius', '10px 10px 0px 0px');
-  await expect(page.locator('.publication-page > .publication-table-panel')).toHaveCSS('border-radius', '0px 0px 11px 11px');
+  await expect(page.locator('.publication-page > .xhs-account-panel')).toHaveCSS('border-radius', '14px');
+  await expect(page.locator('.publication-page .overview-card').first()).toHaveCSS('border-radius', '12px');
+  await expect(page.locator('.publication-page > .publication-table-panel')).toHaveCSS('border-radius', '14px');
   await expect(page.getByRole('button', { name: '小红书独立发布稿', exact: false })).toBeVisible();
   await expect(page.getByText('独立小红书账号', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: '打开小红书创作平台' })).toBeVisible();
@@ -137,18 +137,21 @@ test('取消的发布记录不提交，重新打开不保留原输入', async ({
   expect(requests.filter(r => r.method !== 'GET')).toHaveLength(0);
 });
 
-test('设置显示小红书采集账号与依赖，Cookie 与共用 AI 配置正常保存', async ({ page }) => {
+test('账户设置显示个人小红书账号，只保存 Cookie 并保留管理员模型配置', async ({ page }) => {
   const { requests } = await fixture(page); await page.getByRole('menuitem', { name: '设置' }).click();
   await expect(page.getByRole('textbox', { name: '小红书 Cookie' })).toBeVisible(); await expect(page.getByText('独立小红书账号', { exact: true })).toBeVisible();
   await page.getByRole('textbox', { name: '小红书 Cookie' }).fill('pending-cookie-kept-in-workspace');
-  await page.getByRole('tab', { name: '本地依赖', exact: true }).click(); await expect(page.getByRole('cell', { name: '采集服务', exact: true })).toBeVisible(); await expect(page.getByRole('cell', { name: /抖音/ })).toHaveCount(0);
-  await page.getByRole('tab', { name: '共用 AI 服务', exact: true }).click(); await expect(page.locator('.ant-alert-title').getByText('共用 AI 服务', { exact: true })).toBeVisible();
-  await page.getByRole('textbox', { name: '仿写文案 模型', exact: true }).fill('my-shared-model'); await page.getByRole('button', { name: '保存设置' }).first().click();
+  await expect(page.getByText('由管理员统一配置', { exact: true })).toBeVisible();
+  await expect(page.getByRole('textbox', { name: /模型|API 地址|采集服务地址/ })).toHaveCount(0);
+  await page.getByRole('button', { name: /保存 Cookie/ }).click();
   await expect.poll(() => requests.filter(r => r.path === '/settings' && r.method === 'PATCH').length).toBe(1);
-  const saved = requests.find(r => r.path === '/settings' && r.method === 'PATCH')!; expect(saved.platform).toBe('xiaohongshu'); expect(saved.body.cookie).toBe('pending-cookie-kept-in-workspace'); expect(saved.body.providers.text.model).toBe('my-shared-model');
-  expect(Object.keys(saved.body.providers)).toEqual(['text']); expect(saved.body).not.toHaveProperty('edge_path');
-  await page.getByRole('tab', { name: '账号与采集', exact: true }).click();
+  const saved = requests.find(r => r.path === '/settings' && r.method === 'PATCH')!; expect(saved.platform).toBe('xiaohongshu'); expect(saved.body).toEqual({ cookie: 'pending-cookie-kept-in-workspace' });
   await expect(page.getByRole('textbox', { name: '小红书 Cookie' })).toHaveValue('');
-  await page.getByRole('tab', { name: '共用 AI 服务', exact: true }).click();
-  await expect(page.getByRole('textbox', { name: '仿写文案 模型', exact: true })).toHaveValue('my-shared-model');
+  await expect(page.getByText('model-text', { exact: true })).toBeVisible();
+  await page.getByRole('heading', { name: '账户设置', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: '../data/verification/editorial-account-settings-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+  expect(await page.locator('.main-content').evaluate(node => node.scrollWidth - node.clientWidth)).toBeLessThanOrEqual(1);
+  await page.screenshot({ path: '../data/verification/editorial-account-settings-mobile.png' });
 });

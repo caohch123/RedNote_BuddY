@@ -85,15 +85,20 @@ async function fixtures(page: Page) {
 }
 
 async function rewrites(page: Page) { await page.getByRole('menuitem', { name: '仿写库' }).click(); }
+async function collectionDetail(page: Page) {
+  await page.getByRole('button', { name: '更多操作：小红书素材', exact: true }).click();
+  await page.getByRole('menuitem', { name: '查看详情', exact: false }).click();
+}
 
 test('采集输入、列配置与跨平台链接拒绝', async ({ page }) => {
   const fixture = await fixtures(page); await page.goto('/');
+  await page.getByRole('button', { name: '表格视图', exact: true }).click();
   await expect(page.getByRole('textbox', { name: '小红书链接', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: '小红书素材' })).toBeVisible();
+  await expect(page.locator('.collection-table-panel').getByRole('button', { name: '小红书素材', exact: false })).toBeVisible();
   await expect(page.getByRole('combobox', { name: '来源平台筛选' })).toHaveCount(0);
   await expect(page.getByText('小红书图文 / 视频 · 自动保存文字、封面与媒体', { exact: true })).toHaveCount(0);
-  await expect(page.locator('.import-card')).toHaveCSS('border-radius', '0px');
-  await expect(page.locator('.collection-table-panel')).toHaveCSS('border-radius', '0px 0px 11px 11px');
+  await expect(page.locator('.import-card')).toHaveCSS('border-radius', '14px');
+  await expect(page.locator('.collection-table-panel')).toHaveCSS('border-radius', '14px');
   const input = page.getByRole('textbox', { name: '小红书链接', exact: true });
   await input.fill('https://www.douyin.com/video/123'); await page.getByRole('button', { name: '开始采集' }).click();
   await expect(page.getByText('当前小红书工作区不接收其他平台链接', { exact: true })).toBeVisible();
@@ -132,26 +137,26 @@ test('清空后台任务中断并移除当前工作区全部任务', async ({ pa
 });
 
 test('提取文字自动保存，关闭详情再重新打开显示修改内容', async ({ page }) => {
-  const fixture = await fixtures(page); await page.goto('/'); await page.getByRole('button', { name: '小红书素材' }).click();
-  const detail = page.getByRole('dialog', { name: '小红书笔记详情', exact: true });
-  await detail.getByRole('tab', { name: 'OCR / 视频转写', exact: true }).click();
+  const fixture = await fixtures(page); await page.goto('/'); await collectionDetail(page);
+  const detail = page.getByRole('dialog', { name: '笔记阅读', exact: false });
+  await detail.getByRole('button', { name: 'OCR / 视频转写', exact: true }).click();
   await expect(detail.getByRole('button', { name: '提取全部文字', exact: true })).toHaveCount(0);
   await expect(detail.getByRole('button', { name: '保存文字', exact: true })).toHaveCount(0);
   await detail.getByRole('textbox', { name: '素材 1 提取文字', exact: true }).fill('尚未保存的小红书 OCR 修订');
   await expect.poll(() => fixture.calls.filter(call => call.path === '/assets/a-xiaohongshu/text' && call.method === 'PATCH').length).toBe(1);
   expect(fixture.calls.find(call => call.path === '/assets/a-xiaohongshu/text' && call.method === 'PATCH')?.platform).toBe('xiaohongshu');
   await detail.locator('.ant-drawer-close').click(); await expect(detail).toBeHidden();
-  await page.getByRole('button', { name: '小红书素材' }).click(); await expect(detail).toBeVisible();
-  await detail.getByRole('tab', { name: 'OCR / 视频转写', exact: true }).click();
+  await collectionDetail(page); await expect(detail).toBeVisible();
+  await detail.getByRole('button', { name: 'OCR / 视频转写', exact: true }).click();
   await expect(detail.getByRole('textbox', { name: '素材 1 提取文字', exact: true })).toHaveValue('尚未保存的小红书 OCR 修订');
 });
 
 test('进入提取文字页时自动提交未完成素材并默认处理全部素材', async ({ page }) => {
   const fixture = await fixtures(page);
   fixture.data.xiaohongshu.asset.extraction.status = 'pending';
-  await page.goto('/'); await page.getByRole('button', { name: '小红书素材' }).click();
-  const detail = page.getByRole('dialog', { name: '小红书笔记详情', exact: true });
-  await detail.getByRole('tab', { name: 'OCR / 视频转写', exact: true }).click();
+  await page.goto('/'); await collectionDetail(page);
+  const detail = page.getByRole('dialog', { name: '笔记阅读', exact: false });
+  await detail.getByRole('button', { name: 'OCR / 视频转写', exact: true }).click();
   await expect.poll(() => fixture.calls.filter(call => call.path === '/collections/n-xiaohongshu/extract' && call.method === 'POST').length).toBe(1);
   expect(fixture.calls.find(call => call.path === '/collections/n-xiaohongshu/extract' && call.method === 'POST')?.body).toEqual({ asset_ids: ['a-xiaohongshu'] });
 });

@@ -85,6 +85,7 @@ for (const width of [360, 768, 1440]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.screenshot({ path: testInfo.outputPath(`responsive-${width}.png`), fullPage: true });
     await page.getByRole('textbox', { name: '小红书链接', exact: false }).fill('未提交的内容');
+    await page.getByRole('button', { name: '表格视图', exact: true }).click();
     await page.getByRole('button', { name: '列配置', exact: false }).click(); await expect(page.getByText('显示列', { exact: false })).toBeVisible();
     await page.getByRole('menuitem', { name: /仿写库/ }).click(); await expect(page.getByText('显示列', { exact: false })).toBeHidden();
     await page.getByRole('menuitem', { name: /采集库/ }).click();
@@ -93,13 +94,14 @@ for (const width of [360, 768, 1440]) {
 }
 
 test('单条删除需两次确认，取消不请求，成功关闭详情并清除关联内容', async ({ page }) => {
-  const fixture = await fixtures(page); await page.goto('/'); await page.getByRole('button', { name: '小红书素材1', exact: false }).first().click();
-  const detail = page.getByRole('dialog', { name: '小红书笔记详情', exact: false }); await detail.getByRole('button', { name: '删除采集记录', exact: false }).click();
+  const fixture = await fixtures(page); await page.goto('/'); await page.getByRole('button', { name: '更多操作：小红书素材1', exact: true }).click();
+  await page.getByRole('menuitem', { name: '查看详情', exact: false }).click();
+  const detail = page.getByRole('dialog', { name: '笔记阅读', exact: false }); await detail.getByRole('button', { name: '删除记录', exact: false }).click();
   const first = page.getByRole('dialog', { name: '删除采集记录', exact: false }); await expect(first.getByText(/仿写项目、视频项目、发布稿/)).toBeVisible();
   await first.getByRole('button', { name: '继续删除', exact: false }).click();
   await page.getByRole('dialog', { name: '再次确认：删除采集记录', exact: false }).getByRole('button', { name: /取\s*消/, exact: false }).click();
   expect(fixture.calls.filter(call => call.method === 'DELETE')).toHaveLength(0);
-  await detail.getByRole('button', { name: '删除采集记录', exact: false }).click(); await finalConfirm(page, '删除采集记录'); await expect(detail).toBeHidden();
+  await detail.getByRole('button', { name: '删除记录', exact: false }).click(); await finalConfirm(page, '删除采集记录'); await expect(detail).toBeHidden();
   const deletion = fixture.calls.find(call => call.method === 'DELETE'); expect(deletion).toMatchObject({ path: '/collections/n-xiaohongshu-1', platform: 'xiaohongshu', body: { confirm: true } });
   expect(fixture.data.xiaohongshu.rewrites).toHaveLength(0); expect(fixture.data.xiaohongshu.publications).toHaveLength(0);
   await page.getByRole('menuitem', { name: '仿写库', exact: false }).click(); await expect(page.getByPlaceholder('搜索仿写项目')).toBeVisible({ timeout: 15000 });
@@ -108,7 +110,7 @@ test('单条删除需两次确认，取消不请求，成功关闭详情并清�
 
 test('批量删除包含失败记录，服务拒绝时保留选择和确认，再试后按工作区请求', async ({ page }) => {
   const fixture = await fixtures(page); fixture.setBlocked(true); await page.goto('/');
-  await expect(page.getByRole('textbox', { name: '小红书链接', exact: true })).toBeVisible(); await page.locator('.ant-table-thead').getByRole('checkbox').check();
+  await expect(page.getByRole('textbox', { name: '小红书链接', exact: true })).toBeVisible(); await page.getByRole('checkbox', { name: '选择本页', exact: true }).check();
   await page.getByRole('button', { name: '批量删除', exact: false }).click(); await finalConfirm(page, '批量删除采集记录');
   const modal = page.getByRole('dialog', { name: '再次确认：批量删除采集记录', exact: false }); await expect(modal.getByText('关联任务正在运行，请完成后重试', { exact: false })).toBeVisible();
   expect(fixture.data.xiaohongshu.notes).toHaveLength(2); fixture.setBlocked(false); await modal.getByRole('button', { name: '确认删除', exact: false }).click(); await expect(modal).toBeHidden();
@@ -146,7 +148,7 @@ test('删除唯一工作区后显示空状态，可再添加空白工作区', as
 
 test('后台抽屉与两次删除确认遮罩覆盖顶部按钮，按钮不穿透弹窗', async ({ page }) => {
   await fixtures(page); await page.goto('/');
-  const button = page.getByRole('button', { name: '切换工作区', exact: true });
+  const button = page.getByRole('button', { name: '工作台账户菜单', exact: true });
   async function covered() {
     const box = await button.boundingBox(); expect(box).toBeTruthy();
     expect(await page.evaluate(({ x, y }) => !!document.elementFromPoint(x, y)?.closest('.ant-drawer, .ant-modal-root'), { x: box!.x + box!.width / 2, y: box!.y + box!.height / 2 })).toBe(true);
@@ -154,8 +156,9 @@ test('后台抽屉与两次删除确认遮罩覆盖顶部按钮，按钮不穿�
   await page.getByRole('button', { name: '后台任务' }).click();
   const jobs = page.getByRole('dialog', { name: '小红书后台任务', exact: true }); await expect(jobs).toBeVisible(); await covered();
   await jobs.locator('.ant-drawer-close').click(); await expect(jobs).toBeHidden();
-  await page.getByRole('button', { name: /小红书素材1/ }).first().click();
-  await page.getByRole('dialog', { name: '小红书笔记详情', exact: true }).getByRole('button', { name: '删除采集记录' }).click();
+  await page.getByRole('button', { name: '更多操作：小红书素材1', exact: true }).click();
+  await page.getByRole('menuitem', { name: '查看详情', exact: false }).click();
+  await page.getByRole('dialog', { name: '笔记阅读', exact: false }).getByRole('button', { name: '删除记录' }).click();
   const first = page.getByRole('dialog', { name: '删除采集记录', exact: true }); await expect(first).toBeVisible(); await covered();
   await first.getByRole('button', { name: '继续删除' }).click(); await expect(page.getByRole('dialog', { name: '再次确认：删除采集记录', exact: true })).toBeVisible(); await covered();
 });

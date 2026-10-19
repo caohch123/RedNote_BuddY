@@ -32,6 +32,11 @@ async function fixture(page: Page, wide = false) {
 
 async function anchored(page: Page, platform = 'xiaohongshu', label = '采集表格横向滚动条') {
   const workspace = page.locator(`[data-workspace="${platform}"]`);
+  if (label === '采集表格横向滚动条') {
+    const tableView = workspace.getByRole('button', { name: '表格视图', exact: true });
+    await expect(tableView).toBeVisible();
+    if (await tableView.getAttribute('aria-pressed') !== 'true') await tableView.click();
+  }
   const rail = workspace.getByRole('scrollbar', { name: label });
   await expect(rail).toBeVisible();
   const dock = (await workspace.locator('.workspace-scrollbar-dock').boundingBox())!;
@@ -58,6 +63,7 @@ test('Edge：独立底部栏支持拖动、键盘、列表末尾、折叠导航�
   const xhs = page.locator('[data-workspace="xiaohongshu"]');
   const content = xhs.locator('.main-content'); const body = xhs.locator('.ant-table-body');
   const rail = xhs.getByRole('scrollbar', { name: '采集表格横向滚动条' });
+  await xhs.getByRole('button', { name: '表格视图', exact: true }).click();
   await expect(xhs.getByRole('button', { name: '滚动测试笔记 0', exact: false })).toBeVisible();
   await xhs.getByRole('button', { name: '展开侧边栏', exact: true }).click();
   await anchored(page);

@@ -10,7 +10,8 @@
     "start": "node server.mjs",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:server": "node --test tests/server.test.mjs"
+    "test:server": "node --test tests/server.test.mjs",
+    "docs:screenshots": "node scripts/capture-readme.mjs"
   },
   "dependencies": {
     "@ant-design/icons": "6.3.4",

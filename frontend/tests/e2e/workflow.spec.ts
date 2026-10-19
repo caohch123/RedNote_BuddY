@@ -70,7 +70,7 @@ test('collect → manually rewrite → confirm → export → record actual publ
   await expect(page.getByText('粘贴第一条链接，开始建立你的素材库')).toBeVisible();
   await page.getByRole('textbox', { name: '小红书链接' }).fill('分享文字 https://www.xiaohongshu.com/explore/fixture-note');
   await page.getByRole('button', { name: '开始采集' }).click();
-  await expect(page.getByRole('button', { name: '接口测试笔记' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '接口测试笔记', exact: true })).toBeVisible();
   await page.getByRole('button', { name: '加入仿写库' }).click();
   await expect(page.getByRole('textbox', { name: '仿写标题' })).toHaveValue('接口测试笔记', { timeout: 15000 });
   await page.getByRole('button', { name: 'AI 生成新版本' }).click();

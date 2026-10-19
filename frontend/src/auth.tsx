@@ -73,7 +73,7 @@ function Login({ realm, notice, onSuccess }: { realm: Realm; notice: string; onS
   }
   return <main className={`portal-login ${admin ? 'portal-login-admin' : ''}`}>
     <section className="portal-intro" aria-label="RedNote 工作台">
-      <a href="/" className="portal-brand"><img src="/workbench-logo.png" alt="" /><span>RedNote<span className="portal-brand-sub">内容工作台</span></span></a>
+      <a href="/" className="portal-brand"><img src="/workbench-mark.svg" alt="" /><span>RedNote<span className="portal-brand-sub">内容工作台</span></span></a>
       <div className="portal-intro-copy"><div className="portal-eyebrow">{admin ? 'WORKSPACE ADMINISTRATION' : 'YOUR CREATIVE WORKSPACE'}</div>
         <h1>{admin ? <>管理有序，<br />创作更从容。</> : <>让灵感，<br />成为好内容。</>}</h1>
         <p>{admin ? '统一管理成员、模型服务与用量，掌握工作台的运行状态。' : '采集、创作、整理与发布，在你的专属工作区继续。'}</p>

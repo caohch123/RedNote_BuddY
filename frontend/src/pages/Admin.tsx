@@ -9,6 +9,7 @@ import { auditActions, canCancelManagedJob, canRetryManagedJob, jobNames, modelC
 import type { AdminJob, AdminOverview, AuditEntry, ManagedAccount, ModelSettings } from '../admin';
 import type { Capability, ProviderConfig } from '../types';
 import { costNumber, tokenNumber } from '../billing';
+import { workbenchPalette } from '../theme';
 import Billing from './Billing';
 import '../styles/billing.css';
 import '../styles/admin.css';
@@ -41,7 +42,7 @@ function Overview({ navigate }: { navigate: (section: Section) => void }) {
         <Card title="用户用量" extra={<Button type="link" onClick={() => navigate('billing')}>查看明细 <ArrowRightOutlined /></Button>} className="admin-card">
           {!data.per_user.length ? noItems('今天还没有模型调用') : <div className="admin-user-usage">{data.per_user.map(row => <div className="admin-user-usage-row" key={row.user_id}>
             <div><strong>{row.display_name || row.username}</strong><span>{row.username}</span></div><div><strong>{tokenNumber(row.tokens)} <small>Token</small></strong><span>{row.requests} 次调用 · {costNumber(row.estimated_cny)}</span></div>
-            <Progress percent={data.tokens ? Math.round(row.tokens / data.tokens * 100) : 0} showInfo={false} strokeColor="#5277e7" size="small" />
+            <Progress percent={data.tokens ? Math.round(row.tokens / data.tokens * 100) : 0} showInfo={false} strokeColor={workbenchPalette.accent} size="small" />
           </div>)}</div>}
         </Card>
         <Card title="待办与状态" className="admin-card">

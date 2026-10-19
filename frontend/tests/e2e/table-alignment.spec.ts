@@ -26,6 +26,7 @@ async function fixture(page: Page) {
   await page.setViewportSize({ width: 825, height: 751 });
   await page.goto('/');
   const workspace = page.locator('[data-workspace="xiaohongshu"]');
+  await workspace.getByRole('button', { name: '表格视图', exact: true }).click();
   const panel = workspace.locator('.collection-table-panel');
   await expect(panel.getByRole('button', { name: '对齐测试 0', exact: false })).toBeVisible();
   return { workspace, panel, header: panel.locator('.ant-table-header'), body: panel.locator('.ant-table-body'), rail: workspace.getByRole('scrollbar', { name: '采集表格横向滚动条' }) };

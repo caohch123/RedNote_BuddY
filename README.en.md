@@ -2,36 +2,69 @@
 
 [简体中文](README.md) | English
 
-A local workspace for collecting Xiaohongshu (RedNote) notes, drafting content, generating images and videos, managing media, and preparing publications. The React frontend and Go API are built, started, and updated independently, and communicate over HTTP. Existing workflows and local data are preserved in this architecture.
+A local workspace for collecting Xiaohongshu (RedNote) notes, creating content, and preparing publications, with separate user and administrator portals. The React frontend and Go API are built, started, and updated independently, and communicate over HTTP.
 
 Repository: [caohch123/RedNote_BuddY](https://github.com/caohch123/RedNote_BuddY)
 
 ## Screenshots
 
+These screenshots show the current application with demo accounts, sample media, and simulated usage data.
+
 ### Collection Library
 
-Collect Xiaohongshu notes, browse covers, authors, and engagement data, and add notes to the rewrite library.
+Browse notes in a masonry feed of phone mockups. Read copy, page through images, and play videos directly inside each preview; selection, rewrite, and additional actions sit outside the device.
 
-![Xiaohongshu note collection and management](docs/images/collections.png)
+![Collection library with phone previews and a masonry layout](docs/images/collections.png)
 
-### Rewrite Library and Publication Materials
+### Rewrite Library and Copy Editor
 
-Manage creative projects and text versions, preview confirmed copy, and organize images and videos for publication.
+Edit the title, body, and topics in one content card, with save and confirm actions. A composer stays at the bottom for instructions, audience, tone, length, model, and version selection.
 
-![Rewrite library and publication copy preview](docs/images/rewrite-publishing.png)
+![Rewrite library with a unified copy editor and bottom composer](docs/images/rewrite-editor.png)
+
+<details>
+<summary>View billing and administration</summary>
+
+### Billing Panel
+
+Inspect input and output Tokens, usage trends, model distribution, and request details. Usage and costs in the screenshot are illustrative; real estimates use administrator-configured rates.
+
+![Billing panel with Token trends and usage distribution](docs/images/billing.png)
+
+### Administrator Portal
+
+Manage accounts, model services, request limits, tasks, and audit records from a separate portal.
+
+![Administrator overview and per-user usage](docs/images/admin.png)
+
+</details>
 
 ## Features
 
-- **Collection library**: Collect notes from Xiaohongshu links or shared text, save media locally, extract text with OCR, and transcribe videos.
-- **Rewrite library**: Start from a collected note or a blank project, keep text versions, and confirm the version to use.
+- **Collection library**: Collect notes from Xiaohongshu links or shared text, save media locally, extract text with OCR, and transcribe videos. Switch between a masonry feed of phone previews and a table.
+- **In-place reading**: Page through images with arrows, dots, a keyboard, or swipe gestures, and explicitly start video playback. Media loads as previews enter view, and videos pause when leaving the current preview.
+- **Rewrite library**: Start from a collected note or a blank project, edit in one copy card, keep versions, and confirm the version to use. Generate a new version from the bottom composer with `Ctrl / ⌘ + Enter`.
 - **Images and videos**: Select or upload reference media, analyze creative directions, review prompts, and generate content with your configured models.
 - **Media management**: Organize images and videos by project, select publication materials, and adjust their order.
 - **Publication management**: Validate copy and media, create publication draft snapshots, export drafts, and publish after signing in with your own QR code.
 - **Background tasks**: Run tasks in the background, inspect their status, retry failures, and clear task history.
 - **User and administrator portals**: Separate login realms, isolated member data, centralized model configuration, request limits, and audit records. Two random-password accounts are created on first startup.
-- **Billing panel**: Track reported Token usage, visualize it by time, model, and capability, inspect input/output and cached/reasoning details, configure rates for cost estimates, and export CSV records. Tracking starts when the feature is enabled; earlier usage is not reconstructed.
+- **Billing panel**: Track provider-reported Token usage by time, model, and capability, including input/output and cached/reasoning details. Administrators maintain rates; users can inspect cost estimates and export CSV records. Earlier usage is not reconstructed.
 
 See [accounts and administration](docs/accounts-and-admin.en.md) for initial credentials, permissions, data ownership, and backups. Open `/` for the user workspace and `/admin` for administration. Temporary passwords for `user` and `admin` are stored locally in `data/initial-accounts.txt`; both must be changed on first login.
+
+## Interface and Interaction
+
+The user workspace, administrator portal, and login screens share warm backgrounds, charcoal text, and restrained terracotta accents. Clear type hierarchy and spacing separate content from actions. Phone previews preserve the appearance of collected content, and narrow layouts keep the main actions accessible.
+
+Theme colors and component configuration live in `frontend/src/theme.ts`; page styling lives in `frontend/src/styles/editorial-theme.css`. After installing frontend dependencies, building, and starting the frontend, regenerate the four screenshots with:
+
+```powershell
+cd frontend
+npm run docs:screenshots
+```
+
+The script defaults to `http://127.0.0.1:8080` and uses an isolated browser session with mocked APIs. It does not read local accounts, notes, or bills, and does not submit generation or publication tasks. Set `XHS_SCREENSHOT_URL` to use another running frontend, or `XHS_BROWSER_CHANNEL` to select an installed Playwright browser channel (default: `msedge`).
 
 ## Architecture
 
@@ -159,7 +192,7 @@ npm run test:server
 npm run test:e2e
 ```
 
-By default, UI regression tests use an isolated development server and mocked APIs. Tests against real model services are a separate, explicitly enabled workflow. The frontend/backend separation was validated with 470 backend tests and subtests, 30 frontend unit tests, and 16 UI regression tests. See the [architecture validation record](docs/frontend-backend.md#本次验证2026-10-17) for details (in Chinese).
+By default, UI regression tests use an isolated development server and mocked APIs. Tests against real model services are a separate, explicitly enabled workflow. The October 19, 2026 interface update passed the frontend build, 39 unit tests, the frontend server test, and 68 browser acceptance checks covering phone previews, image paging, video pausing, media menus, the bottom composer, billing, both portals, and responsive layouts. See the [architecture validation record](docs/frontend-backend.md#本次验证2026-10-17) for the earlier frontend/backend separation (in Chinese).
 
 ## Local Data and Configuration
 
@@ -180,7 +213,7 @@ Suggested order: reliability and data protection, followed by creative efficienc
 | Medium term | Creative templates and model adapters | Reuse text, image, and video prompt and parameter templates. Maintain model capability descriptions, parameter validation, and adapter tests; display usage estimates and limits before generation. |
 | Medium term | Media deduplication and search | Identify duplicate media by content hash. Add tags, full-text search, and reference tracking, and show affected projects before cleanup to reduce duplicate storage and accidental deletion. |
 | Medium term | API contracts and continuous integration | Describe interfaces with OpenAPI, generate TypeScript types or clients, and automatically run frontend/backend tests, API compatibility checks, and independent builds on pushes and pull requests. |
-| Long term, as needed | Cross-platform and team deployment | Address Windows-specific paths, credential protection, and local dependencies before supporting other systems. A team edition would also need authentication, roles, workspace isolation, and auditing; evaluate database and object storage options against actual concurrency needs. |
+| Long term, as needed | Cross-platform and team deployment | Address Windows-specific paths, credential protection, and local dependencies before supporting other systems. Build on existing authentication, roles, workspace isolation, and auditing with HTTPS, account recovery, and operational monitoring; evaluate database and object storage options against actual concurrency needs. |
 
 Implementation references: [SQLite online backups](https://www.sqlite.org/backup.html), [OpenAPI Specification](https://spec.openapis.org/oas/latest.html), and [GitHub Actions](https://docs.github.com/en/actions/get-started/understand-github-actions).
 
@@ -201,4 +234,4 @@ Some of the linked documents are in Chinese:
 
 The publishing adapter uses unofficial Creator web interfaces. These interfaces and their signatures may change, and a successful publication does not imply platform approval of this automation method. The frontend/backend separation did not change the publishing mechanism.
 
-The services are designed for a personal workspace on the local machine and listen on loopback addresses. Separating the frontend and backend does not add remote sign-in, multi-user permissions, or authentication for public internet deployment.
+The current application includes user authentication, administrator permissions, data isolation, and audit records. Services listen on loopback addresses by default. Public internet deployment still requires separate HTTPS, reverse-proxy, access-control, and operational configuration; frontend/backend separation alone does not provide that deployment setup.

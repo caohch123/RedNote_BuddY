@@ -23,7 +23,8 @@ test('小红书页面在滚动锁残留时仍可滚动，封面下载完成后�
     if (path === '/collections') return json({ items: notes.map((note, index) => index === 0 && coverReady
       ? { ...note, status: 'ready', media_status: 'succeeded', cover_asset_id: 'cover-ready' } : note), total: notes.length });
     if (path === '/collections/note-0') return json({ note: coverReady
-      ? { ...notes[0], status: 'ready', media_status: 'succeeded', cover_asset_id: 'cover-ready' } : notes[0], assets: [] });
+      ? { ...notes[0], status: 'ready', media_status: 'succeeded', cover_asset_id: 'cover-ready' } : notes[0], assets: coverReady ? [{ id: 'cover-ready', owner_id: 'note-0', kind: 'image', mime: 'image/png', status: 'ready', position: 0, width: 1, height: 1, duration: 0, extraction: { text: '', segments: [], status: 'succeeded', edited: false } }] : [] });
+    if (/^\/collections\/note-\d+$/.test(path)) return json({ note: notes.find(note => note.id === path.split('/')[2]), assets: [] });
     if (path === '/assets/cover-ready/file') {
       imageRequests++;
       if (failNextImage) return route.fulfill({ status: 503, body: '暂时不可用' });
@@ -41,20 +42,20 @@ test('小红书页面在滚动锁残留时仍可滚动，封面下载完成后�
   await page.mouse.wheel(0, 500);
   await expect.poll(() => content.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
   await page.evaluate(() => { document.body.style.overflow = ''; });
-  const noteButton = workspace.getByRole('button', { name: /小红书封面恢复示例/ });
-  await noteButton.click();
-  await page.getByRole('dialog', { name: '小红书笔记详情' }).getByRole('button', { name: '关闭' }).click();
+  await workspace.getByRole('button', { name: '更多操作：小红书封面恢复示例', exact: true }).click();
+  await page.getByRole('menuitem', { name: '查看详情', exact: false }).click();
+  await page.getByRole('dialog', { name: '笔记阅读' }).getByRole('button', { name: '关闭' }).click();
   await content.hover();
   await page.mouse.wheel(0, -400);
   await expect.poll(() => content.evaluate(element => element.scrollTop)).toBeLessThan(500);
 
   coverReady = true;
   failNextImage = true;
-  await workspace.getByRole('button', { name: 'reload' }).click();
+  await workspace.getByRole('button', { name: '刷新采集库', exact: true }).click();
   await expect.poll(() => imageRequests).toBe(1);
   failNextImage = false;
-  await workspace.getByRole('button', { name: 'reload' }).click();
-  const cover = workspace.locator('.ant-table-tbody img[alt="小红书封面恢复示例"]');
+  await workspace.getByRole('button', { name: '刷新采集库', exact: true }).click();
+  const cover = workspace.locator('.collection-note-card img[alt="小红书封面恢复示例"]');
   await expect.poll(() => cover.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(1);
   expect(imageRequests).toBeGreaterThanOrEqual(2);
 });

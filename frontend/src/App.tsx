@@ -158,10 +158,10 @@ function Workspace({
                 trigger={null}
               >
                 <div className="brand">
-                  <img src="/workbench-logo.png" alt="工作台标识" />
+                  <img src="/workbench-mark.svg" alt="工作台标识" />
                   <div>
                     <strong>{platformNames[platform]}工作区</strong>
-                    <small>XIAOHONGSHU WORKSPACE</small>
+                    <small>内容创作工作台</small>
                   </div>
                 </div>
                 <Menu
@@ -217,21 +217,22 @@ function Workspace({
                   </div>
                   <span className="topbar-brand" aria-label="RedNote"><span>RedNote</span></span>
                   <div className="topbar-actions">
-                    <Button
+                    {other && <Button
                       className="workspace-switch"
-                      aria-label={other ? `切换到${platformNames[other]}工作区` : '切换工作区'}
-                      disabled={!other}
+                      aria-label={`切换到${platformNames[other]}工作区`}
                       icon={<SwapOutlined />}
                       onClick={onSwitch}
                     >
-                      {other ? `切换到${platformNames[other]}` : '切换工作区'}
-                    </Button>
+                      {`切换到${platformNames[other]}工作区`}
+                    </Button>}
                     <Badge count={activeJobs} size="small">
                       <Button
+                        aria-label="后台任务"
+                        title="后台任务"
                         icon={activeJobs ? <LoadingOutlined /> : <UnorderedListOutlined />}
                         onClick={() => setJobsOpen(true)}
                       >
-                        后台任务
+                        <span className="workspace-jobs-label">后台任务</span>
                       </Button>
                     </Badge>
                     <Dropdown trigger={['click']} menu={{

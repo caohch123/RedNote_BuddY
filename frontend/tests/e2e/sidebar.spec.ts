@@ -18,7 +18,7 @@ test('侧边栏手动切换增加内容空间，并记住刷新后的选择', as
   const topbar = xhs.locator('.topbar');
   const brand = topbar.getByText('RedNote', { exact: true });
   await expect(brand).toBeVisible();
-  await expect(topbar).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  await expect(topbar).toHaveCSS('background-color', 'rgb(250, 249, 246)');
   await expect(brand).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   const topbarBox = (await topbar.boundingBox())!;
   const brandBox = (await brand.boundingBox())!;

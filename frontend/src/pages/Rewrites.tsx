@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { App, Alert, AutoComplete, Button, Card, Divider, Dropdown, Input, Modal, Select,
+import { App, Alert, Button, Card, Dropdown, Input, Modal, Select,
   Space, Spin, Tabs, Tag, Typography, Upload } from 'antd';
 import { CheckCircleOutlined, DeleteOutlined, EditOutlined, EllipsisOutlined, FileDoneOutlined, FormOutlined,
-  PushpinFilled, PushpinOutlined, ReloadOutlined, UploadOutlined, ThunderboltOutlined } from '@ant-design/icons';
+  PushpinFilled, PushpinOutlined, ReloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { api, errorText, upload } from '../api';
 import { useResource } from '../hooks';
 import type { Asset, AsyncResult, Draft, Job, LibraryMedia, List, Publication, Rewrite, RewriteDetail, RewriteOptions, Version } from '../types';
@@ -13,6 +13,7 @@ import { applyVideoToDraft } from '../videoRewrite';
 import ImageRewriteWorkspace from '../components/ImageRewriteWorkspace';
 import ProjectMediaLibrary from '../components/ProjectMediaLibrary';
 import MediaSelectionGrid from '../components/MediaSelectionGrid';
+import RewriteCopyComposer from '../components/RewriteCopyComposer';
 import { platformNames, workspacePath } from '../platform';
 import { useWorkspace } from '../workspace';
 import DeleteConfirmation from '../components/DeleteConfirmation';
@@ -344,27 +345,22 @@ function RewriteEditor({ id, jobs, refreshList, onPublication }: { id: string; j
           tabBarExtraContent={<div className="rewrite-tab-actions">{confirmed && !dirty && <Tag color="success">已确认</Tag>}{editorTab === 'editor' && textDirty && <Tag color="warning">文案有未保存编辑</Tag>}{editorTab === 'media' && mediaDirty && <Tag color="warning">素材有未保存编辑</Tag>}
             <Button aria-label="刷新仿写项目" icon={<ReloadOutlined />} onClick={() => void result.reload()} /></div>} items={[
           { key: 'editor', label: '文案编辑', children: <div className="rewrite-editing-surface">
-            <div className="options-grid copy-options-grid"><Field label="目标读者"><Input aria-label="目标读者" value={options.audience} onChange={e => setOptions(o => ({ ...o, audience: e.target.value }))} placeholder="如：职场新人、宝妈" /></Field>
-              <Field label="表达语气"><Select aria-label="表达语气" value={options.tone} style={{ width: '100%' }} onChange={v => setOptions(o => ({ ...o, tone: v }))}
-                options={['自然分享', '专业实用', '轻松幽默', '故事叙述', '简洁直接'].map(v => ({ value: v, label: v }))} /></Field>
-              <Field label="正文长度"><Select aria-label="正文长度" value={options.length} style={{ width: '100%' }} onChange={v => setOptions(o => ({ ...o, length: v }))}
-                options={['精简（约 200 字）', '中等（约 500 字）', '详细（约 800 字）'].map(v => ({ value: v, label: v }))} /></Field></div>
-            <Field label="补充要求"><Input.TextArea value={options.instructions} onChange={e => setOptions(o => ({ ...o, instructions: e.target.value }))} rows={2} placeholder="添加自己的观点、产品信息或表达要求" /></Field>
-            <div className="copy-editor-actions">
-              <Button aria-label="AI 生成新版本" className="copy-ai-generate" type="primary" icon={<ThunderboltOutlined />} onClick={() => void generate()} loading={busy === 'generate'} disabled={awaitingCount !== undefined}>AI 生成新版本</Button>
-              <div className="copy-model-picker">
-                <AutoComplete id={`copy-model-${id}`} aria-label="文案模型" value={displayModel} onChange={setDisplayModel} placeholder="选择或输入模型名称"
-                  options={['默认模型', '通义千问', 'DeepSeek'].map(value => ({ value }))} />
-                <Select aria-label="仿写版本" className="rewrite-version-select" value={activeVersion || undefined} placeholder="尚无保存版本" onChange={switchVersion}
-                  options={versions.map(v => ({ value: v.id, label: `版本 ${v.number}${v.id === rewrite?.confirmed_version_id ? ' · 已确认' : ''}` }))} />
-              </div>
-            </div>
-            <Divider />
-            <Field label="标题"><Input aria-label="仿写标题" value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} status={titleTooLong ? 'error' : undefined}
+            <section className="copy-note-card" aria-label="笔记文案">
+            <header className="copy-note-heading"><h2>笔记文案</h2></header>
+            <div className="copy-note-fields">
+            <Field label="标题"><Input aria-label="仿写标题" variant="borderless" value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} status={titleTooLong ? 'error' : undefined}
               count={{ show: true, max: titleLimit, strategy: characterCount, exceedFormatter: (value, { max }) => truncateCharacters(value, max) }} />
               {titleTooLong && <Typography.Text type="danger">{titleError}</Typography.Text>}</Field>
-            <Field label="正文"><Input.TextArea aria-label="仿写正文" value={draft.body} onChange={e => setDraft(d => ({ ...d, body: e.target.value }))} rows={10} showCount /></Field>
+            <Field label="正文"><Input.TextArea aria-label="仿写正文" variant="borderless" value={draft.body} onChange={e => setDraft(d => ({ ...d, body: e.target.value }))} autoSize={{ minRows: 8, maxRows: 24 }} showCount /></Field>
             <Field label="话题"><Select mode="tags" aria-label="仿写话题" style={{ width: '100%' }} value={draft.topics} onChange={v => setDraft(d => ({ ...d, topics: v }))} tokenSeparators={[' ', '，', ',']} placeholder="输入话题并回车" /></Field>
+            </div>
+            {editorTab === 'editor' && <div className="editor-footer copy-note-footer"><Typography.Text type="secondary">{current ? `当前版本 ${current.number} · ${formatDate(current.created_at)}` : '编辑后保存你的第一个版本'}</Typography.Text>
+              <Space wrap><Button aria-label="保存新版本" icon={<EditOutlined />} loading={busy === 'save'} onClick={() => void save()}>保存新版本</Button>
+                <Button aria-label="确认此版本" icon={<CheckCircleOutlined />} loading={busy === 'confirm'} disabled={!current || dirty || confirmed || titleTooLong} onClick={() => void confirm()}>确认此版本</Button></Space></div>}
+            </section>
+            {editorTab === 'editor' && <RewriteCopyComposer options={options} onOptionsChange={setOptions} displayModel={displayModel} onModelChange={setDisplayModel}
+              versions={versions} activeVersion={activeVersion} confirmedVersion={rewrite?.confirmed_version_id} onVersionChange={switchVersion}
+              onGenerate={() => void generate()} generating={busy === 'generate'} pending={awaitingCount !== undefined} disabled={!!busy} />}
           </div> },
           ...(platform === 'xiaohongshu' && current ? [{ key: 'images', label: '图片仿写', children: <div className="rewrite-editing-surface"><ImageRewriteWorkspace rewrite={detail.rewrite} version={current} assets={detail.assets} jobs={jobs} onUpdated={() => { void result.reload(true); refreshList(); }} onApplied={(v, sources, assetID) => { setDraft(d => applyImageToDraft(d, current, v, sources, assetID)); setLocalVersion(v); setActiveVersion(v.id); }} /></div> }] : []),
           { key: 'video', label: '视频仿写', children: <div className="page-stack rewrite-editing-surface">
@@ -390,7 +386,7 @@ function RewriteEditor({ id, jobs, refreshList, onPublication }: { id: string; j
           </> },
         ]} />
       </section>
-      {['editor', 'media'].includes(editorTab) && <div className={`editor-footer${editorTab === 'editor' ? ' rewrite-editing-footer' : ''}`}><Typography.Text type="secondary">{current ? `当前版本 ${current.number} · ${formatDate(current.created_at)}` : '编辑后保存你的第一个版本'}</Typography.Text>
+      {editorTab === 'media' && <div className="editor-footer"><Typography.Text type="secondary">{current ? `当前版本 ${current.number} · ${formatDate(current.created_at)}` : '编辑后保存你的第一个版本'}</Typography.Text>
         <Space wrap><Button aria-label="保存新版本" icon={<EditOutlined />} loading={busy === 'save'} onClick={() => void save()}>保存新版本</Button>
           <Button aria-label="确认此版本" icon={<CheckCircleOutlined />} loading={busy === 'confirm'} disabled={!current || dirty || confirmed || titleTooLong} onClick={() => void confirm()}>确认此版本</Button></Space></div>}
       <Modal title={`创建${platformNames[platform]}发布稿`} open={active && publishOpen} rootClassName={!active || !publishOpen ? 'inactive-workspace-portal' : undefined} onCancel={() => setPublishOpen(false)} onOk={() => void publish()} confirmLoading={busy === 'publish'} okText="创建发布稿">

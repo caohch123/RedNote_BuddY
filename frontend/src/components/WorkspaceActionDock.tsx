@@ -30,6 +30,8 @@ export default function WorkspaceActionDock({ children, ...props }: HTMLAttribut
     const schedule = () => { if (!frame) frame = requestAnimationFrame(measure); };
     const observer = new ResizeObserver(schedule);
     observer.observe(target); observer.observe(host);
+    const column = target.closest('.rewrite-main');
+    if (column) observer.observe(column);
     const scrollport = target.closest('.main-content');
     scrollport?.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);

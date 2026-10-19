@@ -5,6 +5,7 @@ import { api, download, errorText } from '../api';
 import { useResource } from '../hooks';
 import { useWorkspace } from '../workspace';
 import { workspacePath } from '../platform';
+import { workbenchPalette as palette } from '../theme';
 import { Failure } from '../components/Common';
 import { billingCapabilities, billingOperations, billingQuery, costNumber, tokenNumber, trendPoints } from '../billing';
 import type { BillingData, BillingPeriod, TokenPrice, TrendPoint, UsageGroup, UsageRecord } from '../billing';
@@ -29,10 +30,10 @@ function TrendChart({ points, reported }: { points: TrendPoint[]; reported: numb
   if (!reported) return <div className="billing-chart-empty"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无服务商返回的 Token 用量" /></div>;
   return <>
     <div className="billing-chart-scroll" ref={container}>
-      <svg className="billing-trend" viewBox={`0 0 ${width} ${height}`} aria-label="Token 用量趋势图，蓝色为输入，青色为输出，灰色为未拆分用量" role="img">
+      <svg className="billing-trend" viewBox={`0 0 ${width} ${height}`} aria-label="Token 用量趋势图，包含输入、输出与未拆分用量" role="img">
         {[0, .5, 1].map(ratio => <g key={ratio}>
-          <line x1={left} x2={width - 14} y1={bottom - ratio * 140} y2={bottom - ratio * 140} stroke="#e9edf5" strokeDasharray={ratio ? '4 5' : undefined} />
-          <text x={left - 10} y={bottom - ratio * 140 + 4} textAnchor="end" fill="#8a95a9" fontSize="11">{new Intl.NumberFormat('zh-CN', { notation: 'compact', maximumFractionDigits: 1 }).format(max * ratio)}</text>
+          <line x1={left} x2={width - 14} y1={bottom - ratio * 140} y2={bottom - ratio * 140} stroke={palette.line} strokeDasharray={ratio ? '4 5' : undefined} />
+          <text x={left - 10} y={bottom - ratio * 140 + 4} textAnchor="end" fill={palette.muted} fontSize="11">{new Intl.NumberFormat('zh-CN', { notation: 'compact', maximumFractionDigits: 1 }).format(max * ratio)}</text>
         </g>)}
         {points.map((p, i) => {
           const x = left + step * i + step / 2 - bar / 2;
@@ -40,11 +41,11 @@ function TrendChart({ points, reported }: { points: TrendPoint[]; reported: numb
           const description = `${p.label}：输入 ${tokenNumber(p.input)}，输出 ${tokenNumber(p.output)}，未拆分 ${tokenNumber(p.other)} Token`;
           return <g key={p.key} role="button" tabIndex={0} aria-label={description} onFocus={() => setSelected(i)} onMouseEnter={() => setSelected(i)} onClick={() => setSelected(i)} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelected(i); } }}>
             <title>{description}</title>
-            <rect x={x - 5} y={22} width={bar + 10} height={150} fill={selected === i ? '#f0f4ff' : 'transparent'} rx="4" />
-            <rect x={x} y={bottom - input} width={bar} height={input} fill="#4777f5" rx="2" />
-            <rect x={x} y={bottom - input - output} width={bar} height={output} fill="#43b9b0" rx="2" />
-            <rect x={x} y={bottom - input - output - other} width={bar} height={other} fill="#b3bed2" rx="2" />
-            {(i % Math.max(1, Math.ceil(points.length / (width < 450 ? 4 : 7))) === 0 || i === points.length - 1) && <text x={x + bar / 2} y={194} textAnchor="middle" fill="#8a95a9" fontSize="11">{p.label}</text>}
+            <rect x={x - 5} y={22} width={bar + 10} height={150} fill={selected === i ? palette.accentSoft : 'transparent'} rx="4" />
+            <rect x={x} y={bottom - input} width={bar} height={input} fill={palette.accent} rx="2" />
+            <rect x={x} y={bottom - input - output} width={bar} height={output} fill={palette.sage} rx="2" />
+            <rect x={x} y={bottom - input - output - other} width={bar} height={other} fill={palette.stone} rx="2" />
+            {(i % Math.max(1, Math.ceil(points.length / (width < 450 ? 4 : 7))) === 0 || i === points.length - 1) && <text x={x + bar / 2} y={194} textAnchor="middle" fill={palette.muted} fontSize="11">{p.label}</text>}
           </g>;
         })}
       </svg>
@@ -59,7 +60,7 @@ function Distribution({ rows, dimension, onDimension, admin = false }: { rows: U
     <div className="billing-panel-heading"><h3>用量分布</h3><Segmented size="small" value={dimension} options={[{ label: '模型', value: 'models' }, { label: '功能', value: 'capabilities' }, ...(admin ? [{ label: '用户', value: 'users' }] : [])]} onChange={onDimension} /></div>
     {!rows.length ? <div className="billing-chart-empty"><Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无调用记录" /></div> : <div className="billing-distribution-list">{rows.map((row, index) => <div key={row.key} className="billing-distribution-row">
       <div><Tooltip title={row.key}><strong>{dimension === 'capabilities' ? billingCapabilities[row.key] || row.key : row.key}</strong></Tooltip><span>{tokenNumber(row.reported ? row.total_tokens : null)} <small>Token</small></span></div>
-      <div className="billing-progress"><span style={{ width: `${total ? row.total_tokens / total * 100 : 0}%`, background: ['#4777f5', '#43b9b0', '#9b8bd9', '#eca06c'][index % 4] }} /></div>
+      <div className="billing-progress"><span style={{ width: `${total ? row.total_tokens / total * 100 : 0}%`, background: [palette.accent, palette.sage, palette.stone, palette.ochre][index % 4] }} /></div>
       <small>{row.requests} 次调用 · {row.missing ? `${row.missing} 次未返回 Token` : '用量已返回'}</small>
     </div>)}</div>}
   </section>;

@@ -37,7 +37,8 @@ test('旧项目自动使用全部来源文字，编辑器不再被来源栏分�
   const editor = await page.locator('.draft-pane').boundingBox();
   expect(editor!.width).toBeGreaterThan(list!.width * 3);
   const generateButton = page.getByRole('button', { name: 'AI 生成新版本' });
-  await expect(generateButton).toHaveCSS('background-image', /linear-gradient/);
+  await expect(generateButton).toHaveCSS('background-image', 'none');
+  await expect(generateButton).toHaveCSS('background-color', 'rgb(46, 44, 39)');
   await generateButton.click();
   await expect.poll(() => submitted).toBeTruthy();
   expect(submitted.include_body).toBe(true);

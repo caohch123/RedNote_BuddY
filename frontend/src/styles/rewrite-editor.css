@@ -13,6 +13,33 @@
 .rewrite-tab-actions { display:flex; align-items:center; gap:8px; margin-left:16px; }
 .rewrite-tab-actions .ant-tag { margin-inline-end:0; }
 .rewrite-editing-surface, .rewrite-editing-footer { width:100%; max-width:840px; margin-inline:auto; padding-inline:32px; }
+.copy-note-card { min-width:0; border:1px solid #e6e9ef; border-radius:16px; background:#fff; box-shadow:0 4px 20px #23314b03; overflow:hidden; }
+.copy-note-heading { padding:18px 24px; border-bottom:1px solid #f0f2f6; }
+.copy-note-heading h2 { margin:0; font-size:15px; font-weight:600; color:#35415a; }
+.copy-note-fields { padding:20px 24px 8px; }
+.copy-note-fields > .field { margin-bottom:18px; }
+.copy-note-fields > .field + .field { border-top:1px solid #f0f2f6; padding-top:16px; }
+.copy-note-fields > .field:nth-child(2) { margin-bottom:26px; }
+.copy-note-fields .ant-input, .copy-note-fields .ant-input-affix-wrapper { padding-inline:0; }
+.copy-note-fields > .field:first-child .ant-input { font-size:17px; font-weight:600; }
+.copy-note-fields textarea.ant-input { line-height:1.9; resize:vertical; }
+.copy-note-fields .ant-input:focus, .copy-note-fields .ant-input-affix-wrapper-focused { box-shadow:none; }
+.copy-note-footer.editor-footer { margin:0; padding:16px 24px; border-top:1px solid #edf0f5; gap:12px; }
+.copy-note-footer .ant-space { margin-left:auto; }
+.workspace-action-dock:has(.copy-composer-dock) { border:0; background:#fff; }
+.copy-composer-dock { min-width:0; padding:12px 0 max(16px,env(safe-area-inset-bottom)); }
+.copy-composer { padding:14px 16px 12px; min-width:0; border:1px solid #dfe3ea; border-radius:22px; background:#fff; box-shadow:0 4px 24px #202c4510; }
+.copy-composer:focus-within { border-color:#b8c9e6; box-shadow:0 4px 24px #202c4510,0 0 0 2px #eff4fc; }
+.copy-composer .field { gap:5px; margin-bottom:8px; }
+.copy-composer .copy-options-grid { padding-top:8px; border-top:1px solid #f2f3f6; }
+.copy-composer .field > label { font-size:11px; color:#8992a1; }
+.copy-composer .field .ant-select { width:100%; }
+.copy-composer .copy-composer-input { padding:8px 2px; line-height:1.7; font-size:14px; resize:none; }
+.copy-composer-footer { display:flex; align-items:center; gap:12px; padding-top:8px; }
+.copy-composer .copy-model-picker { flex:1; margin-left:0; max-width:none; gap:8px; }
+.copy-composer .copy-model-picker .ant-select { flex:1 1 0; width:0; max-width:none; font-size:12px; }
+.copy-composer .copy-ai-generate { width:36px; height:36px; min-width:36px; flex-shrink:0; font-size:18px; box-shadow:none; }
+.copy-composer .copy-ai-generate:disabled { background-image:none; }
 @media (max-width: 900px) { .copy-model-picker { margin-left: 0; } }
 @media (max-width: 900px) { .rewrite-editing-surface, .rewrite-editing-footer { padding-inline:16px; } }
 @media (max-width: 600px) {
@@ -21,4 +48,13 @@
  .rewrite-editor-tabs > .ant-tabs-nav > .ant-tabs-extra-content { width:0; flex:none; }
  .rewrite-tab-actions { position:absolute; right:0; top:-40px; height:32px; gap:6px; margin-left:0; }
  .rewrite-tab-actions .ant-tag { font-size:11px; }
+ .copy-note-heading { padding:16px; }
+ .copy-note-fields { padding:16px 16px 4px; }
+ .copy-note-footer.editor-footer { padding:14px 16px; }
+ .copy-composer { padding:12px; border-radius:18px; }
+ .copy-composer .field > label { font-size:10px; }
+ .copy-composer .field .ant-input, .copy-composer .field .ant-select { font-size:12px; }
+ .copy-composer-footer { gap:8px; }
+ .copy-composer .copy-model-picker { gap:4px; }
+ .copy-composer-dock { padding:10px 0 max(12px,env(safe-area-inset-bottom)); }
 }
